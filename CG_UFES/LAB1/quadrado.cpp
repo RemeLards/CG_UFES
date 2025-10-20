@@ -23,12 +23,17 @@ int mouseStatus=0;
 
 // }
 
-void mouseMotion(int x,int y)
+void globalmouseMotion(int x, int y)
 {
    gPastMouseX = gCurrentMouseX;
    gPastMouseY = gCurrentMouseY;
    gCurrentMouseX = (x / ( (float) TAMANHO_JANELA ));
    gCurrentMouseY = ((TAMANHO_JANELA-y) / ((float) TAMANHO_JANELA));
+}
+
+void mouseMotion(int x,int y)
+{
+   globalmouseMotion(x,y);
 
    if (gCurrentMouseX >= gX+0.25 && gCurrentMouseX <= gX+0.75)
    {
@@ -41,14 +46,6 @@ void mouseMotion(int x,int y)
       glutPostRedisplay();
    }
 
-}
-
-void globalmouseMotion(int x, int y)
-{
-   gPastMouseX = gCurrentMouseX;
-   gPastMouseY = gCurrentMouseY;
-   gCurrentMouseX = (x / ( (float) TAMANHO_JANELA ));
-   gCurrentMouseY = ((TAMANHO_JANELA-y) / ((float) TAMANHO_JANELA));
 }
 
 void idle(void)
