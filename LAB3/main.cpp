@@ -138,19 +138,28 @@ void idle(void)
     
     //Trata o tiro (soh permite um tiro por vez)
     //Poderia usar uma lista para tratar varios tiros
-    if(tiro){
+    if(tiro)
+    {
         tiro->Move();
 
         //Trata colisao
-        if (alvo.Atingido(tiro)){
+        if (alvo.Atingido(tiro))
+        {
             alvo.Recria(rand()%500 - 250, 200);
-        }
-
-        if (!tiro->Valido()){ 
             delete tiro;
             tiro = NULL;
         }
     }
+
+    if (tiro)
+    {
+        if (!tiro->Valido())
+        { 
+            delete tiro;
+            tiro = NULL;
+        }
+    }
+
     
     
     //Control animation

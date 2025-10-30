@@ -2,7 +2,7 @@ CXX = g++
 CFLAGS = -g -Wall
 LINKING = -lglut -lGL -lGLU
 
-SOURCES = $(wildcard *.cpp)
+SOURCES = $(wildcard *.cpp *.h)
 TARGET = main
 
 all: $(TARGET)

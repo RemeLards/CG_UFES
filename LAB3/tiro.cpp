@@ -26,7 +26,7 @@ void Tiro::DesenhaTiro(GLfloat x, GLfloat y)
 
 void Tiro::Move()
 {
-    gX += -gVel * cos(gDirectionAng * RADIANS);
+    gX += gVel * cos(gDirectionAng * RADIANS);
     gY += gVel * sin(gDirectionAng * RADIANS);
 }
 
