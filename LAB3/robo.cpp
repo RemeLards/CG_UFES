@@ -109,9 +109,9 @@ void RotatePoint(GLfloat x, GLfloat y, GLfloat angle, GLfloat &xOut, GLfloat &yO
 Tiro* Robo::Atira()
 {
     GLfloat SpawnX  = gX // Robot Transform
-                    + paddleHeight * sin(gTheta1 * RADIANS)  // First Haste Transform
-                    + paddleHeight * sin((gTheta1+gTheta2) * RADIANS)  // Second Haste Transform
-                    + paddleHeight * sin((gTheta1+gTheta2+gTheta3) * RADIANS);  // Third Haste Transform
+                    - paddleHeight * sin(gTheta1 * RADIANS)  // First Haste Transform
+                    - paddleHeight * sin((gTheta1+gTheta2) * RADIANS)  // Second Haste Transform
+                    - paddleHeight * sin((gTheta1+gTheta2+gTheta3) * RADIANS);  // Third Haste Transform
 
     GLfloat SpawnY  = gY // Robot Transform
                     + baseHeight // Robot Height
