@@ -9,13 +9,13 @@ class CircularObstacle
         CircleDefinition obstacle;
 
     public:
-        Obstaculo(CircleDefinition c) : obstacle(c) {}
+        Obstaculo(CircleDefinition c) : obstacle(c) {};
         
         void DrawObstacle();
 
-        double GetX(){ return obstacle.GetX()}
-        double GetY(){ return obstacle.GetY()}
-        double GetRadius(){ return obstacle.GetRadius()}
+        double GetX(){ return obstacle.GetX();};
+        double GetY(){ return obstacle.GetY();};
+        double GetRadius(){ return obstacle.GetRadius();};
 };
 
 #endif
