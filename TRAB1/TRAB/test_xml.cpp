@@ -7,10 +7,15 @@
 
 using namespace tinyxml2;
 
-int main()
+int main(int argc,char** argv)
 {
+    if (argc < 1)
+    {
+        printf("Insira o caminho para o SVG!\n");
+        return 1;
+    }
     XMLDocument doc;
-    doc.LoadFile("arena.svg");
+    doc.LoadFile(argv[0]);
 	
     XMLElement* svg = doc.FirstChildElement("svg");
     if (!(svg != NULL))
