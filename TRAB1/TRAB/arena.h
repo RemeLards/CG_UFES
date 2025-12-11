@@ -17,9 +17,9 @@ public:
 
     void DrawArena();
 
-    double GetX(){ return arena.GetX()}
-    double GetY(){ return arena.GetY()}
-    double GetRadius(){ return arena.GetRadius()}
+    double GetX(){ return arena.GetX(); };
+    double GetY(){ return arena.GetY(); };
+    double GetRadius(){ return arena.GetRadius(); };
     
 };
 

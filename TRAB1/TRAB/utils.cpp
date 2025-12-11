@@ -1,6 +1,6 @@
 #include "utils.h"
 
-void CircleDefinition::printAttributes()
+void CircleDefinition::PrintAttributes()
 {
     printf(" Circle:");
     printf(" cx: %.2f|", cx);

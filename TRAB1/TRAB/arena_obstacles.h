@@ -9,7 +9,7 @@ class CircularObstacle
         CircleDefinition obstacle;
 
     public:
-        Obstaculo(CircleDefinition c) : obstacle(c) {};
+        CircularObstacle(CircleDefinition c) : obstacle(c) {};
         
         void DrawObstacle();
 

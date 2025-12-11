@@ -35,7 +35,7 @@ int main()
 
     for (CircleDefinition& obj : circle_vec)
     {
-        obj.printAttributes();
+        obj.PrintAttributes();
     }
 
 

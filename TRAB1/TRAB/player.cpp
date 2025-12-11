@@ -1,5 +1,9 @@
 #include "player.h"
 
+#define BULLET_VEL 2
+#define BULLET_RADIUS 2
+
+//  Player interaction -> Moving, Rotating and Shooting
 
 void ArenaPlayer::MoveInX(
     CircularArena& arena,
@@ -30,6 +34,19 @@ void ArenaPlayer::MoveInY(
         return;
     }
 }
+
+Bullet* ArenaPlayer::Shoot()
+{
+    // Fazer transformações
+    Bullet* bullet = new Bullet(
+        VelocityDefinition(BULLET_VEL*cos(gun_yaw),BULLET_VEL*sin(gun_yaw),0),
+        PositionDefinition(0,0,0),
+        CircleDefinition(0,0,BULLET_RADIUS,"yellow")  
+    )
+}
+
+
+// Collision
 
 
 double ArenaPlayer::SquareDistanceTo(double x, double y)
@@ -89,7 +106,7 @@ bool ArenaPlayer::ObstacleCollision(CircularArena& arena, std::vector<CircularOb
     return false;
 }
 
-bool ArenaPlayer::PlayerCollision(const CircularArena& arena, std::vector<ArenaPlayer>& players_vec)
+bool ArenaPlayer::PlayerCollision(CircularArena& arena, std::vector<ArenaPlayer>& players_vec)
 {
     if (this->InArena(arena))
     {

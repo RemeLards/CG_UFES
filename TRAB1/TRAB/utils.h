@@ -46,6 +46,26 @@ class PositionDefinition
         void SetX(double x) { _x = x; };
         void SetY(double y) { _y = y; };
         void SetZ(double z) { _z = z; };
-}
+};
+
+class VelocityDefinition
+{
+    private:
+        double _vx;
+        double _vy;
+        double _vz;
+
+    public:
+        VelocityDefinition(double vx,double vy, double vz) 
+            : _vx(vx),_vy(vy),_vz(vz) {};
+        
+        double GetVx() { return _vx; };
+        double GetVy() { return _vy; };
+        double GetVz() { return _vz; };
+
+        void SetVx(double vx) { _vx = vx; };
+        void SetVy(double vy) { _vy = vy; };
+        void SetVz(double vz) { _vz = vz; };
+};
 
 #endif
