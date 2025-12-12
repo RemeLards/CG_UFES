@@ -2,31 +2,12 @@
 #define UTILS_H
 
 #include <stdio.h>
-#include <string>
+#include <iostream>
+#include <vector>
 
-class CircleDefinition
-{
-    private:
-        double cx;
-        double cy; 
-        double radius;  
-        std::string color;
-    public:
-        CircleDefinition(double cx, double cy, double radius, const std::string& color)
-            : cx(cx), cy(cy), radius(radius), color(color) {};
-        
-        double GetX() const { return cx; };
-        double GetY() const { return cy; };
-        double GetRadius() const { return radius; };
-        const std::string& GetColor() const { return color; };
+#include "tinyxml2.h"
 
-        void SetX(double x) { cx = x; };
-        void SetY(double y) { cy = y; };
-        void SetRadius(double r) { radius = r; };
-        void SetColor(const std::string& c) { color = c; };
-        
-        void PrintAttributes();
-};
+// --------------------------------------------- //
 
 class PositionDefinition
 {
@@ -39,9 +20,9 @@ class PositionDefinition
         PositionDefinition(double x,double y, double z) 
             : _x(x),_y(y),_z(z) {};
         
-        double GetX() { return _x; };
-        double GetY() { return _y; };
-        double GetZ() { return _z; };
+        double GetX() const { return _x; };
+        double GetY() const { return _y; };
+        double GetZ() const { return _z; };
 
         void SetX(double x) { _x = x; };
         void SetY(double y) { _y = y; };
@@ -59,13 +40,86 @@ class VelocityDefinition
         VelocityDefinition(double vx,double vy, double vz) 
             : _vx(vx),_vy(vy),_vz(vz) {};
         
-        double GetVx() { return _vx; };
-        double GetVy() { return _vy; };
-        double GetVz() { return _vz; };
+        double GetVx() const { return _vx; };
+        double GetVy() const { return _vy; };
+        double GetVz() const { return _vz; };
 
         void SetVx(double vx) { _vx = vx; };
         void SetVy(double vy) { _vy = vy; };
         void SetVz(double vz) { _vz = vz; };
 };
+
+// --------------------------------------------- //
+
+class ObjectDefinition
+{
+    private:
+        PositionDefinition position;
+        std::string color;
+        double r,g,b;
+    public:
+        ObjectDefinition(double x, double y, double z,const std::string& color)
+            : position{x, y, z}, color(color) {}
+        
+        const std::string& GetColor() const { return color; };
+        void SetColor(const std::string& c) { color = c; };
+        PositionDefinition& GetPosition() { return position; }
+        
+        void PrintAttributes();
+};
+
+
+class CircleDefinition : public ObjectDefinition
+{
+    private:
+        double _radius;  
+    public:
+        CircleDefinition(double cx, double cy, double radius, const std::string& color)
+            : ObjectDefinition(cx,cy,0,color), _radius(radius) {};
+        
+        double GetRadius() const { return _radius; };
+        void SetRadius(double r) { _radius = r; };
+        
+};
+
+// --------------------------------------------- //
+
+class EntityDefinition : public ObjectDefinition
+{
+    private:
+        VelocityDefinition velocity;
+
+    public:
+        EntityDefinition(
+            double x, double y, double z,
+            const std::string& color,
+            double vx, double vy, double vz
+        ) : ObjectDefinition(x, y, z, color), velocity{vx, vy, vz}
+        {};
+
+        VelocityDefinition& GetVelocity() { return velocity; }
+};
+
+class CircularEntityDefinition : public EntityDefinition
+{
+    private:
+        double _radius;
+
+    public:
+        CircularEntityDefinition(
+            double x, double y, double z,
+            const std::string& color,
+            double vx, double vy, double vz,
+            double radius
+        ) : EntityDefinition(x, y, z, color,vx,vy,vz), _radius(radius)
+        {};
+
+        double GetRadius() const { return _radius; };
+        void SetRadius(double r) { _radius = r; };
+};
+
+// --------------------------------------------- //
+
+std::vector<CircleDefinition> svg_parser(const char* path);
 
 #endif

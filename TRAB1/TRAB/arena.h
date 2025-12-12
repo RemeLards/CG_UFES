@@ -7,19 +7,13 @@
 // Por enquanto a Denifição de Círculo está aqui, depois trocar
 #include "utils.h"
 
-class CircularArena {
-private:
-    CircleDefinition arena;
-
+class CircularArena : public CircleDefinition
+{
 public:
-    CircularArena(CircleDefinition c)
-        : arena(c) {}
+    CircularArena(double cx, double cy, double radius, const std::string& color)
+        : CircleDefinition(cx,cy,radius,color) {};
 
     void DrawArena();
-
-    double GetX(){ return arena.GetX(); };
-    double GetY(){ return arena.GetY(); };
-    double GetRadius(){ return arena.GetRadius(); };
     
 };
 

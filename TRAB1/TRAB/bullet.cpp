@@ -1,1 +1,79 @@
 #include "bullet.h"
+
+bool Bullet::Delete(CircularArena& arena, std::vector<ArenaPlayer>& players_vec, std::vector<CircularObstacle>& obstacles_vec)
+{
+    if( this->ObstacleCollision(arena,obstacles_vec) || this->PlayerCollision(arena,players_vec) )
+    {
+        return true;
+    }
+
+    return false;
+}
+
+double Bullet::SquareDistanceTo(double x, double y)
+{
+    double dx = fabs(x - this->GetPosition().GetX());
+    double dy = fabs(y - this->GetPosition().GetY());
+
+    return (dx*dx + dy*dy);
+}
+
+bool Bullet::InArena(CircularArena& arena)
+{
+    return (
+        this->SquareDistanceTo(arena.GetPosition().GetX(),arena.GetPosition().GetY()) 
+        <= arena.GetRadius()*arena.GetRadius()
+    );
+}
+
+bool Bullet::ObstacleCollision(CircularArena& arena, std::vector<CircularObstacle>& obstacles_vec)
+{
+    if (this->InArena(arena))
+    {
+        for (CircularObstacle& obstacle : obstacles_vec)
+        {
+            double player_distance_from_obstacle_center = this->SquareDistanceTo(
+                obstacle.GetPosition().GetX(),
+                obstacle.GetPosition().GetY()
+            );
+            double limit = obstacle.GetRadius() + this->Hitbox();
+            if ( player_distance_from_obstacle_center <= limit*limit )
+            {
+                return true;
+            }
+        }
+    }
+    else
+    {
+        return true;
+    }
+
+    return false;
+}
+
+bool Bullet::PlayerCollision(CircularArena& arena, std::vector<ArenaPlayer>& players_vec)
+{
+    if (this->InArena(arena))
+    {
+        for (ArenaPlayer& current_player : players_vec)
+        {
+            if (current_player.GetId() == this->GetOwner()) continue;
+
+            double bullet_distance_from_current_player = this->SquareDistanceTo(
+                current_player.GetPosition().GetX(),
+                current_player.GetPosition().GetY()
+            );
+            double limit = current_player.Hitbox() + this->Hitbox();
+            if (bullet_distance_from_current_player <= limit * limit)
+            {
+                return true;
+            }
+        }
+    }
+    else
+    {
+        return true;
+    }
+
+    return false;  
+}

@@ -3,7 +3,8 @@ CFLAGS = -g -Wall
 LINKING = -lglut -lGL -lGLU
 
 SOURCES = tinyxml2.cpp test_xml.cpp \
-          arena.cpp arena_obstacles.cpp player.cpp utils.cpp bullet.cpp
+          arena.cpp arena_obstacles.cpp player.cpp utils.cpp \
+		  bullet.cpp arena_parser.cpp 
 TARGET = test
 
 all: $(TARGET)

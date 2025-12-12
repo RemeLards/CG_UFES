@@ -1,50 +1,58 @@
 #ifndef BULLET_H
 #define	BULLET_H
 
+#include <math.h>
+#include <vector>
+
 #include <GL/gl.h>
 #include <GL/glu.h>
 
 #include "utils.h"
 #include "player.h"
+#include "arena.h"
+#include "arena_obstacles.h"
 
 #define radiusTiro 5
 
-class ArenaPlayer;
+class ArenaPlayer; // forward declaration
 
-class Bullet
+class Bullet : public CircularEntityDefinition
 {
-    VelocityDefinition _vel;
-    PositionDefinition _pos;
-    CircleDefinition _bullet;
     int _owner;
 
 private:
     void DesenhaCirc(GLint radius, GLfloat R, GLfloat G, GLfloat B);
     void DesenhaTiro(PositionDefinition pos);
 public:
-    Bullet(VelocityDefinition vel, PositionDefinition pos, CircleDefinition bullet, int owner)
-    : _vel(vel),
-      _pos(pos),
-      _bullet(bullet),
+    Bullet(
+        double x, double y, double z,
+        const std::string& color,
+        double vx, double vy, double vz,
+        double bullet_radius, int owner
+    )
+    : CircularEntityDefinition(x,y,z,color,vx,vy,vz,bullet_radius),
       _owner(owner) 
       {};
-    void Desenha(){ 
-        DesenhaTiro(_pos);
-    };
+
+    void Desenha(){ DesenhaTiro(this->GetPosition()); };
     void Move(GLdouble timeDiference);
     bool Valido();
 
-    int GetOwner(){ return _owner;};
-    void Delete(ArenaPlayer& player);
+    bool Delete(CircularArena& arena, std::vector<ArenaPlayer>& players_vec, std::vector<CircularObstacle>& obstacles_vec);
 
-    bool PlayerCollision(ArenaPlayer& player);
-    //void GetPos(GLfloat &xOut, GLfloat &yOut){
-    //    xOut = gX;
-    //    yOut = gY;
-    //};
-    double GetX() { return this->_pos.GetX(); };
-    double GetY() { return this->_pos.GetY(); };
-    double GetRadius() { return this->_bullet.GetRadius(); };
+    // Poderia dizer quero toda entidade da arena tem isso, mas deixa ... se complicar troco
+
+    // Collions Check
+    double SquareDistanceTo(double x, double y);
+    bool InArena(CircularArena& arena);
+    bool PlayerCollision(CircularArena& arena,std::vector<ArenaPlayer>& players_vec);
+    bool ObstacleCollision(CircularArena& arena, std::vector<CircularObstacle>& obstacles_vec);
+
+    // Pos and Hitbox
+    double Hitbox(){ return this->GetRadius(); };
+    int GetOwner(){ return _owner;};
+
+
 };
 
 #endif	/* TIRO_H */

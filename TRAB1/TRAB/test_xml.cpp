@@ -1,55 +1,66 @@
 // https://github.com/leethomason/tinyxml2
-#include "tinyxml2.h"
+
 #include "utils.h"
-#include <stdio.h>
-#include <iostream>
-#include <vector>
+#include "arena.h"
+#include "arena_parser.h"
 
 using namespace tinyxml2;
 
 int main(int argc,char** argv)
 {
-    if (argc < 1)
+    if (argc < 2)
     {
         printf("Insira o caminho para o SVG!\n");
         return 1;
     }
-    XMLDocument doc;
-    doc.LoadFile(argv[0]);
-	
-    XMLElement* svg = doc.FirstChildElement("svg");
-    if (!(svg != NULL))
+    if (argc > 2)
     {
-        printf("Elemento <svg> não encontrado!\n");
-        return 1;
+        printf("Apenas insira o caminho para o SVG!\n");
+        return 2;   
     }
 
-    std::vector<CircleDefinition> circle_vec;
-    for (XMLElement* circle = svg->FirstChildElement("circle"); circle != nullptr; circle = circle->NextSiblingElement("circle"))
-    {
-        double cx = 0, cy = 0, radius = 0;
-        const char* color = nullptr;
+    std::vector<CircleDefinition> circle_vec = svg_parser(argv[1]);
 
-        circle->QueryDoubleAttribute("cx", &cx);
-        circle->QueryDoubleAttribute("cy", &cy);
-        circle->QueryDoubleAttribute("r", &radius);
-        color = circle->Attribute("fill");
-        CircleDefinition circle_class = CircleDefinition(cx,cy,radius,color);
-        circle_vec.push_back(circle_class);
-    }
-
-    for (CircleDefinition& obj : circle_vec)
-    {
-        obj.PrintAttributes();
-    }
-
-
-
-    // XMLText* textNode = doc.FirstChildElement( "PLAY" )->FirstChildElement( "TITLE" )->FirstChild()->ToText();
-    // if (textNode)  const char* title = textNode->Value();
-    // if (title)
+    // if (circle_vec.size() != 0)
     // {
-    //     printf( "Name of play (2): %s\n", title );
+    //     for (CircleDefinition& obj : circle_vec)
+    //     {
+    //         obj.PrintAttributes();
+    //     }
     // }
+
+    std::optional<CircularArena>  arena = arena_getter(circle_vec);
+    if (arena)
+    {
+        printf("Arena: \n");
+        arena->PrintAttributes();
+        printf("\n\n");
+    }
+
+    std::optional<std::vector<ArenaPlayer>> players = players_getter(circle_vec);
+    if (players)
+    {
+        int i = 0;
+        for ( ArenaPlayer& p : *players)
+        {
+            printf("Player %d: \n",(i++)+1);
+            p.PrintAttributes();
+            printf("\n\n");
+        }
+    }
+
+    std::optional<std::vector<CircularObstacle>> obstacles = obstacles_getter(circle_vec);
+    if (obstacles)
+    {
+        int i = 0;
+        for ( CircularObstacle& obs : *obstacles)
+        {
+            printf("Obstacle %d: \n",(i++)+1);
+            obs.PrintAttributes();
+            printf("\n\n");
+        }
+    }
+
+
     return 0;
 }

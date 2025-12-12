@@ -3,19 +3,13 @@
 
 #include "utils.h"
 
-class CircularObstacle
+class CircularObstacle : public CircleDefinition
 {
-    private:
-        CircleDefinition obstacle;
-
     public:
-        CircularObstacle(CircleDefinition c) : obstacle(c) {};
+        CircularObstacle(double cx, double cy, double radius, const std::string& color) :
+        CircleDefinition(cx, cy, radius, color) {};
         
         void DrawObstacle();
-
-        double GetX(){ return obstacle.GetX();};
-        double GetY(){ return obstacle.GetY();};
-        double GetRadius(){ return obstacle.GetRadius();};
 };
 
 #endif

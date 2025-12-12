@@ -15,25 +15,28 @@
 
 #define PLAYER_HEALTH 3
 
-class ArenaPlayer
+class Bullet; // forward declaration
+
+class ArenaPlayer : public CircularEntityDefinition
 {
     private:
-        CircleDefinition player_head;
         PositionDefinition last_pos;
-        PositionDefinition current_pos;
         std::vector<Bullet*> bullet_vec;
         double gun_yaw;
         const int health = PLAYER_HEALTH;
         const int _id;
         
     public:
-        ArenaPlayer(CircleDefinition c,int id) : 
-            player_head(c),
-            last_pos(c.GetX(), c.GetY(), 0),
-            current_pos(c.GetX(), c.GetY(), 0),
+        ArenaPlayer(
+            double x, double y, double z,
+            const std::string& color,
+            double vx, double vy, double vz,
+            double head_radius, int id
+
+        ):  CircularEntityDefinition(x,y,z,color,vx,vy,vz,head_radius),
+            last_pos(x, y, z),
             gun_yaw(0),
-            _id(id)
-            {};
+            _id(id) {};
 
         // Drawing
         void DrawPlayer();
@@ -53,8 +56,8 @@ class ArenaPlayer
             double dy
         );
         void Shoot(double x,double y);
-        void DeleteBullet(std::size_t index);
-        int GetBulletIndex(Bullet* bullet);
+        // void DeleteBullet(std::size_t index);
+        // int GetBulletIndex(Bullet* bullet);
 
         // Collions Check
         double SquareDistanceTo(double x, double y);
@@ -62,13 +65,10 @@ class ArenaPlayer
         bool ArenaCollision(CircularArena& arena);
         bool ObstacleCollision(CircularArena& arena, std::vector<CircularObstacle>& obstacles_vec);
         bool PlayerCollision(CircularArena& arena, std::vector<ArenaPlayer>& players_vec);
-        Bullet* BulletCollision(std::vector<Bullet*> bullet_vec); 
+        // Bullet* BulletCollision(std::vector<Bullet*> bullet_vec); 
 
         // Pos and Hitbox
-        PositionDefinition GetPos(){ return current_pos; };
-        double Hitbox(){ return this->player_head.GetRadius(); };
-        double GetX() { return this->current_pos.GetX(); };
-        double GetY() { return this->current_pos.GetY(); };
+        double Hitbox(){ return this->GetRadius(); };
         int GetId() { return this->_id; };
         std::vector<Bullet*> GetBulletVec() { return this->bullet_vec; };
 
