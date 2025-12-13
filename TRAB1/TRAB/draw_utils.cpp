@@ -29,11 +29,11 @@ void DrawRectWithBorder(
     // Border
     DrawRect(
         height,width,
-        R,G,B
+        0,0,0
     );
     // Actual Object
     DrawRect(
-        height*(1-BORDER_SIZE),width*(1-BORDER_SIZE),
+        height*(1-BORDER_SIZE*0.5),width*(1-BORDER_SIZE*0.5),
         R,G,B
     );
 }

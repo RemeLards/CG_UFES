@@ -1,8 +1,5 @@
 #include "player.h"
 
-#define BULLET_VEL 2
-#define BULLET_RADIUS 2
-
 // void ArenaPlayer::DeleteBullet(std::size_t index)
 // {
 //     Bullet* ptr = this->bullet_vec[index];
@@ -11,11 +8,82 @@
 // }
 //  Player interaction -> Moving, Rotating and Shooting
 
+void ArenaPlayer::DrawLegs()
+{
+    if (this->_is_moving)
+    {
+        glPushMatrix();
+            glTranslatef(
+                this->GetRadius() * BODY_X_RADIUS_MULTIPLER * LEG_DISTANCE_MULTIPLER,
+                0,
+                0
+            );
+            
+            if(this->_last_leg_id == LEFT_LEG_ID)
+            {
+                glRotatef(
+                    180,
+                    0,
+                    0,
+                    1
+                );
+            }
+            DrawRect(
+                this->GetRadius()*LEG_HEIGHT_MULTIPLER,
+                this->GetRadius()*LEG_WIDTH_MULTIPLER,
+                0,0,0
+            );
+        glPopMatrix();
+
+        // Left Leg
+        glPushMatrix();
+            glTranslatef(
+                -this->GetRadius() * BODY_X_RADIUS_MULTIPLER * LEG_DISTANCE_MULTIPLER,
+                0,
+                0
+            );
+            if(this->_last_leg_id == RIGHT_LEG_ID)
+            {
+                glRotatef(
+                    180,
+                    0,
+                    0,
+                    1
+                );
+            }
+            DrawRect(
+                this->GetRadius()*LEG_HEIGHT_MULTIPLER,
+                this->GetRadius()*LEG_WIDTH_MULTIPLER,
+                0,0,0
+            );
+        glPopMatrix();
+        this->is_leg_rotated = false;
+    }
+}
+
+void ArenaPlayer::DrawArm()
+{
+    glPushMatrix();
+        glTranslatef(
+            this->GetRadius() * BODY_X_RADIUS_MULTIPLER * ARM_DISTANCE_MULTIPLER,
+            0,
+            0
+        );
+        DrawRectWithBorder(
+            this->GetRadius()*ARM_HEIGHT_MULTIPLER,
+            this->GetRadius()*ARM_WIDTH_MULTIPLER,
+            this->GetRGB().GetR(),this->GetRGB().GetG(),this->GetRGB().GetB()
+        );
+    glPopMatrix();
+}
+
+
 void ArenaPlayer::DrawBody()
 {
     glPushMatrix();
         DrawEllipseWithBorder(
-            2*this->GetRadius(),0.5*this->GetRadius(),
+            BODY_X_RADIUS_MULTIPLER*this->GetRadius(),
+            (BODY_X_RADIUS_MULTIPLER/4.0)*this->GetRadius(),
             this->GetRGB().GetR(),this->GetRGB().GetG(),this->GetRGB().GetB()
         );
         DrawCircWithBorder(
@@ -34,6 +102,8 @@ void ArenaPlayer::DrawPlayer()
             -this->GetPosition().GetY(),
             0
         );
+        this->DrawArm();
+        this->DrawLegs();
         this->DrawBody();
     // this->GetPosition().PrintAttributes();
     glPopMatrix();

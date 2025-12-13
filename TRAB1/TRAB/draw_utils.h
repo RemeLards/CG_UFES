@@ -12,7 +12,7 @@
 #define CIRCLE_DEGREES 360.0
 #define CIRCULE_RES 60.0
 #define POINT_SIZE 4.0
-#define BORDER_SIZE 0.15
+#define BORDER_SIZE 0.1
 
 void DrawRect(
     GLint height, GLint width,

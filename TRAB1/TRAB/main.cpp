@@ -21,7 +21,7 @@
 #include <stdlib.h>
 
 #define INC_KEY 10 
-#define INC_MOVEKEYIDLE -0.3 // Para mover para cima e para baixo se mantenha consistente
+#define INC_MOVEKEYIDLE -0.08 // Para mover para cima e para baixo se mantenha consistente
 
 // debug
 int debug = 0;
@@ -41,6 +41,10 @@ GLint VHeight;
 CircularArena g_arena;
 std::vector<CircularObstacle> g_obstacles;
 std::vector<ArenaPlayer> g_players;
+GLdouble last_time_record_state = 0;
+std::vector<PositionDefinition> last_players_recorded_pos;
+
+#define LEG_ANIMATION_DELAY_MS 350.0
 
 //Controla a animacao do robo
 int animate = 0;
@@ -55,6 +59,14 @@ Robo robo; //Um rodo
 Tiro * tiro = NULL; //Um tiro por vez
 Alvo alvo(0, 200); //Um alvo por vez
 
+bool IsPlayerMoving(PositionDefinition p_pos, PositionDefinition saved_pos)
+{
+    return(
+        p_pos.GetX()-saved_pos.GetX() +
+        p_pos.GetY()-saved_pos.GetY() +
+        p_pos.GetZ()-saved_pos.GetZ() != 0
+    );
+}
 
 void ImprimePlacar(GLfloat x, GLfloat y)
 {
@@ -184,27 +196,49 @@ void idle(void)
     //Atualiza o tempo do ultimo frame ocorrido
     previousTime = currentTime;
 
+    if ((currentTime-last_time_record_state) >= LEG_ANIMATION_DELAY_MS)
+    {
+        // printf("current time: %.2f\n",currentTime);
+        // printf("last time diff : %.2f\n",last_time_record_state);
+        // printf("time diff : %.2f\n",currentTime-last_time_record_state);
+        for (unsigned int i = 0; i < g_players.size(); i++)
+        {
+            if(IsPlayerMoving(g_players[i].GetPosition(),last_players_recorded_pos[i]))
+            {
+                g_players[i].IsMoving(true);
+                last_players_recorded_pos[i] =  g_players[i].GetPosition();
+                if (g_players[i].GetLastLeg() == RIGHT_LEG_ID)
+                {
+                    g_players[i].SetCurrentLeg(LEFT_LEG_ID);
+                }
+                else g_players[i].SetCurrentLeg(RIGHT_LEG_ID);
+            }
+            else g_players[i].IsMoving(false);
+        }
+        last_time_record_state = currentTime;
+    }
+
     double inc = INC_MOVEKEYIDLE;
     //Treat keyPress
     if(keyStatus[(int)('w')])
     {
         ArenaPlayer& p1 = g_players[0];
-        p1.MoveInY(g_arena,g_obstacles,g_players,inc);
+        p1.MoveInY(g_arena,g_obstacles,g_players,inc*timeDiference);
     }
     if(keyStatus[(int)('s')])
     {
         ArenaPlayer& p1 = g_players[0];
-        p1.MoveInY(g_arena,g_obstacles,g_players,-inc);
+        p1.MoveInY(g_arena,g_obstacles,g_players,-inc*timeDiference);
     }
     if(keyStatus[(int)('a')])
     {
         ArenaPlayer& p1 = g_players[0];
-        p1.MoveInX(g_arena,g_obstacles,g_players,inc);
+        p1.MoveInX(g_arena,g_obstacles,g_players,inc*timeDiference);
     }
     if(keyStatus[(int)('d')])
     {
         ArenaPlayer& p1 = g_players[0];
-        p1.MoveInX(g_arena,g_obstacles,g_players,-inc);
+        p1.MoveInX(g_arena,g_obstacles,g_players,-inc*timeDiference);
     }
     
     //Trata o tiro (soh permite um tiro por vez)
@@ -367,8 +401,17 @@ int main(int argc, char *argv[])
     glutIdleFunc(idle);
     glutKeyboardUpFunc(keyup);
 
+    // Viewing Height=Width = Arena Diamater
     VHeight=VWidth=2*g_arena.GetRadius();
     gl_init();
+
+    // Record Last Positions before start
+    last_time_record_state=glutGet(GLUT_ELAPSED_TIME);
+    for ( ArenaPlayer& player : g_players)
+    {
+        last_players_recorded_pos.push_back(player.GetPosition());
+    }
+
     glutMainLoop();
  
     return 0;

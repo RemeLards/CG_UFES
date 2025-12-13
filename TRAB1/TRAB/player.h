@@ -15,6 +15,21 @@
 
 #define PLAYER_HEALTH 3
 
+#define BULLET_VEL 2
+#define BULLET_RADIUS 2
+#define BODY_X_RADIUS_MULTIPLER 2
+
+#define ARM_DISTANCE_MULTIPLER 0.7
+#define ARM_WIDTH_MULTIPLER 0.4
+#define ARM_HEIGHT_MULTIPLER 2.0
+
+#define LEG_DISTANCE_MULTIPLER 0.2
+#define LEG_WIDTH_MULTIPLER (ARM_WIDTH_MULTIPLER * 1.2)
+#define LEG_HEIGHT_MULTIPLER ARM_HEIGHT_MULTIPLER
+
+#define LEFT_LEG_ID 1
+#define RIGHT_LEG_ID 2
+
 class Bullet; // forward declaration
 
 class ArenaPlayer : public CircularEntityDefinition
@@ -23,8 +38,11 @@ class ArenaPlayer : public CircularEntityDefinition
         PositionDefinition last_pos;
         std::vector<Bullet*> bullet_vec;
         double gun_yaw;
-        int health = PLAYER_HEALTH;
+        short health = PLAYER_HEALTH;
         const int _id;
+        bool _is_moving = false;
+        short _last_leg_id = LEFT_LEG_ID;
+        bool is_leg_rotated = false;
         
     public:
         ArenaPlayer(
@@ -40,6 +58,8 @@ class ArenaPlayer : public CircularEntityDefinition
 
         // Drawing
         void DrawBody();
+        void DrawArm();
+        void DrawLegs();
         void DrawPlayer();
         void AnimatePlayer();
 
@@ -73,8 +93,10 @@ class ArenaPlayer : public CircularEntityDefinition
         double Hitbox(){ return this->GetRadius(); };
         int GetId() { return this->_id; };
         std::vector<Bullet*> GetBulletVec() { return this->bullet_vec; };
+        void IsMoving(bool is_moving) {this->_is_moving = is_moving ;};
+        short GetLastLeg() {return this->_last_leg_id;};
+        void SetCurrentLeg(short leg_id) {this->_last_leg_id = leg_id;};
 
 };
-
 
 #endif

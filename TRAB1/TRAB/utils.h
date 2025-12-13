@@ -74,6 +74,20 @@ class RGBColor
         void PrintAttributes();
 };
 
+class StateDefinition : public PositionDefinition
+{
+    private:
+        double _time;
+    
+    public:
+        StateDefinition() : PositionDefinition(0,0,0),_time(0){};
+        StateDefinition(double x, double y, double z, double time) 
+            : PositionDefinition(x,y,y),_time(time){};
+        
+        double GetTime(){return _time;};
+
+};
+
 // --------------------------------------------- //
 
 class ObjectDefinition
