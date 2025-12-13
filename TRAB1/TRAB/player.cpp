@@ -16,15 +16,11 @@ void ArenaPlayer::DrawBody()
     glPushMatrix();
         DrawEllipseWithBorder(
             2*this->GetRadius(),0.5*this->GetRadius(),
-            this->GetRGB().GetR(),this->GetRGB().GetG(),this->GetRGB().GetB(),
-            false,
-            40
+            this->GetRGB().GetR(),this->GetRGB().GetG(),this->GetRGB().GetB()
         );
         DrawCircWithBorder(
-            this->GetRadius() - 0.1*this->GetRadius(),
-            this->GetRGB().GetR(),this->GetRGB().GetG(),this->GetRGB().GetB(),
-            false,
-            40
+            this->GetRadius(),
+            this->GetRGB().GetR(),this->GetRGB().GetG(),this->GetRGB().GetB()
         );
     glPopMatrix();
 }

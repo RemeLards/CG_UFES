@@ -10,11 +10,7 @@ void CircularObstacle::DrawObstacle()
         );
         DrawCirc(
             this->GetRadius(),
-            this->GetRGB().GetR(),
-            this->GetRGB().GetG(),
-            this->GetRGB().GetB(),
-            false,
-            40
+            this->GetRGB().GetR(),this->GetRGB().GetG(),this->GetRGB().GetB()
         );
     glPopMatrix();
 }
