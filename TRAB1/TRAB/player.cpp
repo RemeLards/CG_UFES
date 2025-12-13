@@ -11,6 +11,38 @@
 // }
 //  Player interaction -> Moving, Rotating and Shooting
 
+void ArenaPlayer::DrawBody()
+{
+    glPushMatrix();
+        DrawEllipseWithBorder(
+            2*this->GetRadius(),0.5*this->GetRadius(),
+            this->GetRGB().GetR(),this->GetRGB().GetG(),this->GetRGB().GetB(),
+            false,
+            40
+        );
+        DrawCircWithBorder(
+            this->GetRadius() - 0.1*this->GetRadius(),
+            this->GetRGB().GetR(),this->GetRGB().GetG(),this->GetRGB().GetB(),
+            false,
+            40
+        );
+    glPopMatrix();
+}
+
+
+void ArenaPlayer::DrawPlayer()
+{
+    glPushMatrix();
+        glTranslatef(
+            this->GetPosition().GetX(),
+            -this->GetPosition().GetY(),
+            0
+        );
+        this->DrawBody();
+    // this->GetPosition().PrintAttributes();
+    glPopMatrix();
+}
+
 void ArenaPlayer::MoveInX(
     CircularArena& arena,
     std::vector<CircularObstacle>& obstacles_vec, 
@@ -37,7 +69,7 @@ void ArenaPlayer::MoveInY(
     double dy)
 {
     this->last_pos = this->GetPosition();
-    this->GetPosition().SetX(this->GetPosition().GetY() + dy);
+    this->GetPosition().SetY(this->GetPosition().GetY() + dy);
     
     if ( this->ArenaCollision(arena) || 
          this->ObstacleCollision(arena,obstacles_vec) || 

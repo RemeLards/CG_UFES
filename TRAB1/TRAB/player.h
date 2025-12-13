@@ -23,7 +23,7 @@ class ArenaPlayer : public CircularEntityDefinition
         PositionDefinition last_pos;
         std::vector<Bullet*> bullet_vec;
         double gun_yaw;
-        const int health = PLAYER_HEALTH;
+        int health = PLAYER_HEALTH;
         const int _id;
         
     public:
@@ -39,6 +39,7 @@ class ArenaPlayer : public CircularEntityDefinition
             _id(id) {};
 
         // Drawing
+        void DrawBody();
         void DrawPlayer();
         void AnimatePlayer();
 
@@ -56,6 +57,7 @@ class ArenaPlayer : public CircularEntityDefinition
             double dy
         );
         void Shoot(double x,double y);
+        void GotHit() { this->health--;};
         // void DeleteBullet(std::size_t index);
         // int GetBulletIndex(Bullet* bullet);
 

@@ -2,6 +2,7 @@
 #define ARENA_OBSTACLES_H
 
 #include "utils.h"
+#include "draw_utils.h"
 
 class CircularObstacle : public CircleDefinition
 {

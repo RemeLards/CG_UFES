@@ -31,15 +31,15 @@ Alvo alvo(0, 200); //Um alvo por vez
 void renderScene(void)
 {
      // Clear the screen.
-     glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT);
  
-     robo.Desenha();
+    robo.Desenha();
      
-     if (tiro) tiro->Desenha();
+    if (tiro) tiro->Desenha();
      
-     alvo.Desenha();
+    alvo.Desenha();
 
-     glutSwapBuffers(); // Desenha the new frame of the game.
+    glutSwapBuffers(); // Desenha the new frame of the game.
 }
 
 void keyPress(unsigned char key, int x, int y)

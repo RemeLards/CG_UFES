@@ -27,6 +27,8 @@ class PositionDefinition
         void SetX(double x) { _x = x; };
         void SetY(double y) { _y = y; };
         void SetZ(double z) { _z = z; };
+
+        void PrintAttributes();
 };
 
 class VelocityDefinition
@@ -47,6 +49,29 @@ class VelocityDefinition
         void SetVx(double vx) { _vx = vx; };
         void SetVy(double vy) { _vy = vy; };
         void SetVz(double vz) { _vz = vz; };
+
+        void PrintAttributes();
+};
+
+class RGBColor
+{
+    private:
+        double _r;
+        double _g;
+        double _b;
+    public:
+        RGBColor() : _r(0), _g(0), _b(0) {};
+        RGBColor(double r,double g, double b) : _r(r), _g(g), _b(b) {};
+
+        double GetR() const {return _r;};
+        double GetG() const {return _g;};
+        double GetB() const {return _b;};
+
+        void SetR(double r) {_r = r;};
+        void SetG(double g) {_g = g;};
+        void SetB(double b) {_b = b;};
+
+        void PrintAttributes();
 };
 
 // --------------------------------------------- //
@@ -54,17 +79,23 @@ class VelocityDefinition
 class ObjectDefinition
 {
     private:
-        PositionDefinition position;
+        PositionDefinition _position;
         std::string color;
-        double r,g,b;
+        RGBColor rgb;
     public:
         ObjectDefinition(double x, double y, double z,const std::string& color)
-            : position{x, y, z}, color(color) {}
+            : _position{x, y, z}, color(color), rgb{}
+            {
+                this->SetRBGByColorName();
+            }
         
-        const std::string& GetColor() const { return color; };
-        void SetColor(const std::string& c) { color = c; };
-        PositionDefinition& GetPosition() { return position; }
-        
+        const std::string& GetColorName() const { return color; };
+        void SetColorName(const std::string& c) { color = c; };
+        void SetRBGByColorName();
+        RGBColor& GetRGB() {return rgb;};
+
+        PositionDefinition& GetPosition() { return _position; };
+
         void PrintAttributes();
 };
 

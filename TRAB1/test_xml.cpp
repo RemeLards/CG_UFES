@@ -20,15 +20,6 @@ int main(int argc,char** argv)
     }
 
     std::vector<CircleDefinition> circle_vec = svg_parser(argv[1]);
-
-    // if (circle_vec.size() != 0)
-    // {
-    //     for (CircleDefinition& obj : circle_vec)
-    //     {
-    //         obj.PrintAttributes();
-    //     }
-    // }
-
     std::optional<CircularArena>  arena = arena_getter(circle_vec);
     if (arena)
     {

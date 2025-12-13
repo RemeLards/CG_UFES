@@ -66,6 +66,7 @@ bool Bullet::PlayerCollision(CircularArena& arena, std::vector<ArenaPlayer>& pla
             double limit = current_player.Hitbox() + this->Hitbox();
             if (bullet_distance_from_current_player <= limit * limit)
             {
+                current_player.GotHit();
                 return true;
             }
         }
