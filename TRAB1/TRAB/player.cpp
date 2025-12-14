@@ -100,8 +100,8 @@ void ArenaPlayer::DrawPlayer()
             this->yaw,
             0,0,1
         );
-        this->DrawArm();
         this->DrawLegs();
+        this->DrawArm();
         this->DrawBody();
     // this->GetPosition().PrintAttributes();
     glPopMatrix();

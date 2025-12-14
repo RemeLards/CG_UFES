@@ -24,12 +24,14 @@
 
 #define SPECIAL_KEY 231 // isso é para o 'ç'
 #define CAPS_SPECIAL_KEY 199 // isso é para o 'ç
+
 #define LEFT_CLICK 0
 #define MOUSE_PRESSED 0 
 #define MOUSE_RELEASED 1
 
 #define LEG_ANIMATION_DELAY_MS 350.0
 #define WEAPON_FIRERATE 200.0
+#define MOUSE_SENSITIVY 1.0
 
 // debug
 int debug = 0;
@@ -46,6 +48,9 @@ GLint VWidth;
 GLint VHeight;
 
 // Arena, Obstacles, Players and Bullets
+bool load_initial_pos = true;
+std::vector<PositionDefinition> initial_players_pos;
+
 CircularArena g_arena;
 std::vector<CircularObstacle> g_obstacles;
 std::vector<ArenaPlayer> g_players;
@@ -55,6 +60,8 @@ std::vector<PositionDefinition> last_players_recorded_pos;
 
 std::vector<GLdouble> last_time_player_shoot = {0.0,0.0};
 
+bool game_finished = false;
+
 // Debugging Vel
 PositionDefinition past_p1_pos;
 PositionDefinition past_b1_pos;
@@ -63,14 +70,8 @@ PositionDefinition past_b1_pos;
 int animate = 0;
 
 // Counts how many times the ball was hit
-int atingido = 0;
 static char str[1000];
 void * font = GLUT_BITMAP_9_BY_15;
-
-//Componentes do mundo virtual sendo modelado
-Robo robo; //Um rodo
-Tiro * tiro = NULL; //Um tiro por vez
-Alvo alvo(0, 200); //Um alvo por vez
 
 
 //Mouse
@@ -80,6 +81,12 @@ float gPastMouseX = 0;
 float gPastMouseY = 0;
 int MouseButton = -1;
 int MouseState = -1;
+//Game Mouse Pos
+float gCurrentGameMouseX = 0;
+float gCurrentGameMouseY = 0;
+float gPastGameMouseX = 0;
+float gPastGameMouseY = 0;
+
 
 void globalmouseMotion(int x, int y)
 {
@@ -89,11 +96,13 @@ void globalmouseMotion(int x, int y)
    gCurrentMouseY = ((Height-y) / ((float) Height));
 }
 
+
 void mouseClick(int button, int state, int x,int y)
 {
     MouseButton = button;
     MouseState = state;
 }
+
 
 void Player2_Bullets(GLdouble timeDiference)
 {
@@ -111,6 +120,7 @@ void Player2_Bullets(GLdouble timeDiference)
     } 
 }
 
+
 void Player1_Bullets(GLdouble timeDiference)
 {
     std::vector<Bullet>& bullet_vec = g_players[0].GetBulletVec();
@@ -126,6 +136,7 @@ void Player1_Bullets(GLdouble timeDiference)
         }
     } 
 }
+
 
 void Player2_Keys(GLdouble timeDiference, GLdouble currentTime)
 {  
@@ -168,34 +179,61 @@ void Player2_Keys(GLdouble timeDiference, GLdouble currentTime)
 
 void Player1_Keys(GLdouble timeDiference, GLdouble currentTime)
 {   
+    ArenaPlayer& p1 = g_players[0];
     //Treat keyPress
     if(keyStatus[(int)('w')])
     {
-        ArenaPlayer& p1 = g_players[0];
         p1.Move(g_arena,g_obstacles,g_players,timeDiference);
-        printf("Tentando Andar W\n");
     }
     if(keyStatus[(int)('s')])
     {
-        ArenaPlayer& p1 = g_players[0];
         p1.Move(g_arena,g_obstacles,g_players,-timeDiference);
     }
     if(keyStatus[(int)('a')])
     {
-        ArenaPlayer& p1 = g_players[0];
         p1.Rotate(timeDiference);
     }
     if(keyStatus[(int)('d')])
     {
-        ArenaPlayer& p1 = g_players[0];
         p1.Rotate(-timeDiference);
     }
     if (MouseButton == LEFT_CLICK && MouseState == MOUSE_PRESSED && 
         (currentTime-last_time_player_shoot[0]) > WEAPON_FIRERATE
     )
     {
-        g_players[0].Shoot();
+        p1.Shoot();
         last_time_player_shoot[0] = currentTime;
+    }
+
+    // Se o Jogador para de mover o mouse a mão para
+    gPastGameMouseX=gCurrentGameMouseX;
+    gPastGameMouseY=gCurrentGameMouseY;
+
+    gCurrentGameMouseX = gCurrentMouseX;
+    gCurrentGameMouseY = gCurrentMouseY;
+
+    // Movimento é Horizontal, quis fazer um movimento adaptativo em relação
+    // à orientação do personagem, mas vou deixar isso parado por hora
+    double PastX = gPastGameMouseY; //*cos(p1.GetYaw()*RADIANS); + gPastGameMouseX*sin(p1.GetYaw()*RADIANS);
+    double PastY = gPastGameMouseX; //*cos(p1.GetYaw()*RADIANS); + gPastGameMouseY*sin(p1.GetYaw()*RADIANS);
+    double CurrentX = gCurrentGameMouseY;//*cos(p1.GetYaw()*RADIANS); + gCurrentGameMouseX*sin(p1.GetYaw()*RADIANS);
+    double CurrentY = gCurrentGameMouseX;//*cos(p1.GetYaw()*RADIANS); + gCurrentGameMouseY*sin(p1.GetYaw()*RADIANS);
+
+    // Do jeito que está apenas a variação em Y que afeta o angulo
+    // Portanto, inverti os eixos ao passar para função
+    // Para detectar movimento horizontal ao invés de vertical
+    double mouse_angle = atan2(
+        cross_product(PastX,PastY,CurrentX,CurrentY),
+        dot_product(PastX,PastY,CurrentX,CurrentY)
+    );
+    printf(" mouse_angle in rads :  %.5f\n",mouse_angle);
+    if ( mouse_angle < 0)
+    {
+        p1.RotateGun(timeDiference*MOUSE_SENSITIVY);
+    }
+    if  ( mouse_angle > 0)
+    {
+        p1.RotateGun(-timeDiference*MOUSE_SENSITIVY);
     }
 
 }
@@ -236,12 +274,19 @@ void AnimatePlayersLeg(GLdouble currentTime)
     }
 }
 
-void ImprimePlacar(GLfloat x, GLfloat y)
+
+void ImprimePlacar(GLfloat x, GLfloat y, int player)
 {
     glColor3f(1.0, 1.0, 1.0);
     //Cria a string a ser impressa
     char *tmpStr;
-    sprintf(str, "Atingido: %d", atingido );
+    if (player >= 0) sprintf(str, "P%d Health: %d",player+1, g_players[player].GetHealth());
+    else 
+    {
+        if (g_players[0].GetHealth() > 0) sprintf(str, "P%d Wins",1);
+        else if (g_players[1].GetHealth() > 0) sprintf(str, "P%d Wins",2);
+        else sprintf(str, "Draw");
+    }
     //Define a posicao onde vai comecar a imprimir
     glRasterPos2f(x, y);
     //Imprime um caractere por vez
@@ -258,35 +303,77 @@ void renderScene(void)
     // Clear the screen.
     glClear(GL_COLOR_BUFFER_BIT);
 
-        g_arena.DrawArena();
+        if (!game_finished)
+        {
+            glClear(GL_COLOR_BUFFER_BIT);
 
-        for ( CircularObstacle& obstacle : g_obstacles)
-        {
-            obstacle.DrawObstacle();
-        }
-        // int i = 0;
-        for ( ArenaPlayer& player : g_players)
-        {
-            player.DrawPlayer();
-            // printf("Bullets : %ld || player : %d\n",player.GetBulletVec().size(),++i);
-            for ( Bullet& bullet : player.GetBulletVec())
+            g_arena.DrawArena();
+
+            for ( CircularObstacle& obstacle : g_obstacles)
             {
-                bullet.DrawBullet();
+                obstacle.DrawObstacle();
             }
+            // int i = 0;
+            for ( ArenaPlayer& player : g_players)
+            {
+                player.DrawPlayer();
+                // printf("Bullets : %ld || player : %d\n",player.GetBulletVec().size(),++i);
+                for ( Bullet& bullet : player.GetBulletVec())
+                {
+                    bullet.DrawBullet();
+                }
+            }
+            ImprimePlacar(-VWidth*0.5,VHeight*0.45, 0);
+            ImprimePlacar(-VWidth*0.5,VHeight*0.40, 1);
         }
-        // robo.Desenha();        
-        // if (tiro) tiro->Desenha();
-        
-        // alvo.Desenha();
-
-        // ImprimePlacar(-230.0,230.0);
+        else
+        {
+            ImprimePlacar(-VWidth*0.05,VHeight*0, -1); 
+        }
 
     glutSwapBuffers(); // Desenha the new frame of the game.
 }
 
+
+void init_game()
+{
+    // Record Last Positions before start
+    if (initial_players_pos.size() == 0) load_initial_pos = true;
+    else load_initial_pos = false;    
+    last_players_recorded_pos.clear();
+    last_time_record_state=glutGet(GLUT_ELAPSED_TIME);
+    for (unsigned int i = 0; i < g_players.size(); i++)
+    {
+        ArenaPlayer& player = g_players[i];
+
+        if (game_finished)
+        {
+            player.GetBulletVec().clear(); // Clear Bullets
+            player.SetHealth(PLAYER_HEALTH); // puts start Health
+            player.SetDirection({0,1,0}); // puts in the start Direction
+            if (initial_players_pos.size()) // puts in the start Position
+            {
+                player.GetPosition().SetX(initial_players_pos[i].GetX());
+                player.GetPosition().SetY(initial_players_pos[i].GetY());
+                player.GetPosition().SetZ(initial_players_pos[i].GetZ());
+            }
+            player.SetYaw(0.0); // puts in the start yaw
+            player.SetGunYaw(0.0); // puts in the start gun yaw
+        }
+        if(load_initial_pos)
+        {
+            initial_players_pos.push_back(player.GetPosition());
+        }
+
+        last_players_recorded_pos.push_back(player.GetPosition());
+        player.GetVelocity().SetVy(PLAYER_SPEED);
+    }
+}
+
+
 void keyPress(unsigned char key, int x, int y)
 {
-    printf("Key : n:%d c:%c\n",key,key);
+    // printf("Key : n:%d c:%c\n",key,key);
     switch (key)
     {
         case '1':
@@ -337,46 +424,26 @@ void keyPress(unsigned char key, int x, int y)
         case '6':
             keyStatus[(int)('6')] = 1; //Using keyStatus trick
             break;
-            
-        case 'f':
-        case 'F':
-             robo.RodaBraco1(-INC_KEY);   //Without keyStatus trick
-             break;
+
         case 'r':
         case 'R':
-             robo.RodaBraco1(+INC_KEY);   //Without keyStatus trick
-             break;
-        case 'g':
-        case 'G':
-             robo.RodaBraco2(-INC_KEY);   //Without keyStatus trick
-             break;
-        case 't':
-        case 'T':
-             robo.RodaBraco2(+INC_KEY);   //Without keyStatus trick
-             break;
-        case 'h':
-        case 'H':
-             robo.RodaBraco3(-INC_KEY);   //Without keyStatus trick
-             break;
-        case 'y':
-        case 'Y':
-             robo.RodaBraco3(+INC_KEY);   //Without keyStatus trick
-             break;
-        case ' ':
-             if (!tiro)
-                tiro = robo.Atira();
-             break;
+            init_game();
+            game_finished = false; //Using keyStatus trick
+            break;
+        
         case 27 :
              exit(0);
     }
     glutPostRedisplay();
 }
 
+
 void keyup(unsigned char key, int x, int y)
 {
     keyStatus[(int)(key)] = 0;
     glutPostRedisplay();
 }
+
 
 void ResetKeyStatus()
 {
@@ -385,6 +452,7 @@ void ResetKeyStatus()
     for(i = 0; i < 256; i++)
        keyStatus[i] = 0; 
 }
+
 
 void idle(void)
 {
@@ -403,13 +471,17 @@ void idle(void)
     // past_p1_pos = g_players[0].GetPosition();
     // past_b1_pos = g_players[0].GetBulletVec()[0].GetPosition();
 
-    AnimatePlayersLeg(currentTime);
-    Player1_Keys(timeDiference,currentTime);
-    Player2_Keys(timeDiference,currentTime);
-    Player1_Bullets(timeDiference);
-    Player2_Bullets(timeDiference);
-    
-    glutPostRedisplay();
+    if (!game_finished)
+    {
+        if(g_players[0].GetHealth() == 0 || g_players[1].GetHealth() == 0) game_finished=true;
+        AnimatePlayersLeg(currentTime);
+        Player1_Keys(timeDiference,currentTime);
+        Player2_Keys(timeDiference,currentTime);
+        Player1_Bullets(timeDiference);
+        Player2_Bullets(timeDiference);
+        
+        glutPostRedisplay();
+    }
 }
 
 
@@ -431,6 +503,7 @@ void gl_init()
       
 }
 
+
 int load_svg(const char* path)
 {
     // Get Circles
@@ -442,7 +515,7 @@ int load_svg(const char* path)
     }
 
     // Get Arena, Obstacles and Players
-    std::optional<CircularArena>  arena = arena_getter(circle_vec);
+    std::optional<CircularArena> arena = arena_getter(circle_vec);
     if (!(arena))
     {
         printf("Arena nao carregada corretamente!\n");
@@ -496,17 +569,6 @@ int load_svg(const char* path)
     return 0;
 }
 
-void init_game()
-{
-    // Record Last Positions before start
-    last_time_record_state=glutGet(GLUT_ELAPSED_TIME);
-    for ( ArenaPlayer& player : g_players)
-    {
-        last_players_recorded_pos.push_back(player.GetPosition());
-        // Initial Player Velocity
-        player.GetVelocity().SetVy(PLAYER_SPEED);
-    }
-}
  
 int main(int argc, char *argv[])
 {

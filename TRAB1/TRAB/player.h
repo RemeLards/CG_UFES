@@ -93,6 +93,14 @@ class ArenaPlayer : public CircularEntityDefinition
         std::vector<Bullet>& GetBulletVec() { return this->bullet_vec; };
         short GetLastLeg() {return this->_last_leg_id;};
         void SetCurrentLeg(short leg_id) {this->_last_leg_id = leg_id;};
+        const double& GetYaw() const {return this->yaw;};
+
+        const short& GetHealth() const {return this->health;};
+        void SetHealth(short health) {this->health=health;};
+
+        void SetDirection(PositionDefinition dir) {this->direction=dir;};
+        void SetYaw(double yaw) {this->yaw=yaw;};
+        void SetGunYaw(double g_yaw) {this->gun_yaw=g_yaw;};
 
 };
 
