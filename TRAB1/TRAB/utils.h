@@ -177,7 +177,7 @@ class CircularEntityDefinition : public EntityDefinition
 // --------------------------------------------- //
 
 std::vector<CircleDefinition> svg_parser(const char* path);
-double dot_product(double x1, double y1, double x2, double y2);
-double cross_product(double x1, double y1, double x2, double y2);
+double dot_product_2d(double x1, double y1, double x2, double y2);
+double cross_product_2d(double x1, double y1, double x2, double y2);
 
 #endif

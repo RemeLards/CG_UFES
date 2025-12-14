@@ -48,8 +48,9 @@ GLint VWidth;
 GLint VHeight;
 
 // Arena, Obstacles, Players and Bullets
-bool load_initial_pos = true;
+bool first_start = true;
 std::vector<PositionDefinition> initial_players_pos;
+std::vector<double> initial_players_angle;
 
 CircularArena g_arena;
 std::vector<CircularObstacle> g_obstacles;
@@ -223,10 +224,10 @@ void Player1_Keys(GLdouble timeDiference, GLdouble currentTime)
     // Portanto, inverti os eixos ao passar para função
     // Para detectar movimento horizontal ao invés de vertical
     double mouse_angle = atan2(
-        cross_product(PastX,PastY,CurrentX,CurrentY),
-        dot_product(PastX,PastY,CurrentX,CurrentY)
+        cross_product_2d(PastX,PastY,CurrentX,CurrentY),
+        dot_product_2d(PastX,PastY,CurrentX,CurrentY)
     );
-    printf(" mouse_angle in rads :  %.5f\n",mouse_angle);
+    // printf(" mouse_angle in rads :  %.5f\n",mouse_angle);
     if ( mouse_angle < 0)
     {
         p1.RotateGun(timeDiference*MOUSE_SENSITIVY);
@@ -338,8 +339,30 @@ void renderScene(void)
 void init_game()
 {
     // Record Last Positions before start
-    if (initial_players_pos.size() == 0) load_initial_pos = true;
-    else load_initial_pos = false;    
+
+    // Setting Up Character to look at each other
+
+    if (first_start)
+    {
+        ArenaPlayer& p1 = g_players[0];
+        ArenaPlayer& p2 = g_players[1];
+        double dtheta = atan2(
+            p1.GetPosition().GetY()-p2.GetPosition().GetY(),
+            p1.GetPosition().GetX()-p2.GetPosition().GetX()
+        );
+        dtheta = (dtheta/RADIANS);
+
+        // printf("Thetha : %.2f\n",dtheta);
+        // Removo o Offset de 90 graus e alinho os personagens
+        p1.SetYaw(-90-dtheta+180);
+        p2.SetYaw(-90-dtheta);
+        p1.Rotate(0); // Updates Direction Vector
+        p2.Rotate(0); // Updates Direction Vector
+
+        initial_players_angle.push_back(p1.GetYaw());
+        initial_players_angle.push_back(p2.GetYaw());
+    }
+
     last_players_recorded_pos.clear();
     last_time_record_state=glutGet(GLUT_ELAPSED_TIME);
     for (unsigned int i = 0; i < g_players.size(); i++)
@@ -350,17 +373,19 @@ void init_game()
         {
             player.GetBulletVec().clear(); // Clear Bullets
             player.SetHealth(PLAYER_HEALTH); // puts start Health
-            player.SetDirection({0,1,0}); // puts in the start Direction
             if (initial_players_pos.size()) // puts in the start Position
             {
                 player.GetPosition().SetX(initial_players_pos[i].GetX());
                 player.GetPosition().SetY(initial_players_pos[i].GetY());
                 player.GetPosition().SetZ(initial_players_pos[i].GetZ());
+                player.SetLastPosition(initial_players_pos[i]);
             }
-            player.SetYaw(0.0); // puts in the start yaw
+            player.SetYaw(initial_players_angle[i]); // puts in the start Yaw
+            player.Rotate(0); // Updates Direction vector
             player.SetGunYaw(0.0); // puts in the start gun yaw
+            player.SetMovingStatus(false);
         }
-        if(load_initial_pos)
+        if(first_start)
         {
             initial_players_pos.push_back(player.GetPosition());
         }
@@ -368,6 +393,7 @@ void init_game()
         last_players_recorded_pos.push_back(player.GetPosition());
         player.GetVelocity().SetVy(PLAYER_SPEED);
     }
+    if (first_start) first_start=false; //first setup
 }
 
 

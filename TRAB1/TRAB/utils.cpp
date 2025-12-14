@@ -127,12 +127,18 @@ std::vector<CircleDefinition> svg_parser(const char* path)
     return circle_vec;
 }
 
-double dot_product(double x1, double y1, double x2, double y2)
+
+// As funções partem do princípio que x1,y1 = (0,0)
+double dot_product_2d(double x1, double y1, double x2, double y2)
 {
     return (x1*x2+y1*y2);
 }
 
-double cross_product(double x1, double y1, double x2, double y2)
+double cross_product_2d(double x1, double y1, double x2, double y2)
 {
     return (x1*y2-x1*y1);
+}
+double vector_2d_squared_size(double x1, double y1)
+{
+    return (x1*x1+y1*y1);
 }
