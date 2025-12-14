@@ -26,8 +26,10 @@
 #define CAPS_SPECIAL_KEY 199 // isso é para o 'ç
 #define LEFT_CLICK 0
 #define MOUSE_PRESSED 0 
-#define MOUSE_RELEASED 1 
+#define MOUSE_RELEASED 1
+
 #define LEG_ANIMATION_DELAY_MS 350.0
+#define WEAPON_FIRERATE 200.0
 
 // debug
 int debug = 0;
@@ -43,12 +45,19 @@ const GLint Height = 500;
 GLint VWidth;
 GLint VHeight;
 
-// Arena,Obstacles and Players
+// Arena, Obstacles, Players and Bullets
 CircularArena g_arena;
 std::vector<CircularObstacle> g_obstacles;
 std::vector<ArenaPlayer> g_players;
+
 GLdouble last_time_record_state = 0;
 std::vector<PositionDefinition> last_players_recorded_pos;
+
+std::vector<GLdouble> last_time_player_shoot = {0.0,0.0};
+
+// Debugging Vel
+PositionDefinition past_p1_pos;
+PositionDefinition past_b1_pos;
 
 //Controla a animacao do robo
 int animate = 0;
@@ -69,6 +78,8 @@ float gCurrentMouseX = 0;
 float gCurrentMouseY = 0;
 float gPastMouseX = 0;
 float gPastMouseY = 0;
+int MouseButton = -1;
+int MouseState = -1;
 
 void globalmouseMotion(int x, int y)
 {
@@ -80,24 +91,19 @@ void globalmouseMotion(int x, int y)
 
 void mouseClick(int button, int state, int x,int y)
 {
-   
-   if (button == LEFT_CLICK && state == MOUSE_PRESSED)
-   {
-        g_players[0].Shoot();
-   }
-
+    MouseButton = button;
+    MouseState = state;
 }
 
 void Player2_Bullets(GLdouble timeDiference)
 {
-    std::vector<Bullet*>& bullet_vec = g_players[1].GetBulletVec();
+    std::vector<Bullet>& bullet_vec = g_players[1].GetBulletVec();
     for (unsigned int i=0; i<bullet_vec.size(); i++ )
     {
-        Bullet* bullet = bullet_vec[i];
-        if (!bullet->Move(g_arena,g_obstacles,g_players,BULLET_VEL*timeDiference))
+        Bullet& bullet = bullet_vec[i];
+        if (!bullet.Move(g_arena,g_obstacles,g_players,BULLET_VEL*timeDiference))
         {
             bullet_vec.erase(bullet_vec.begin() + i);
-            delete bullet;
             // As proximas balas são movidas para trás
             // logo o índice tem que atrasar para não pular um elemento
             i--;
@@ -107,14 +113,13 @@ void Player2_Bullets(GLdouble timeDiference)
 
 void Player1_Bullets(GLdouble timeDiference)
 {
-    std::vector<Bullet*>& bullet_vec = g_players[0].GetBulletVec();
+    std::vector<Bullet>& bullet_vec = g_players[0].GetBulletVec();
     for (unsigned int i=0; i<bullet_vec.size(); i++ )
     {
-        Bullet* bullet = bullet_vec[i];
-        if (!bullet->Move(g_arena,g_obstacles,g_players,BULLET_VEL*timeDiference))
+        Bullet& bullet = bullet_vec[i];
+        if (!bullet.Move(g_arena,g_obstacles,g_players,BULLET_VEL*timeDiference))
         {
             bullet_vec.erase(bullet_vec.begin() + i);
-            delete bullet;
             // As proximas balas são movidas para trás
             // logo o índice tem que atrasar para não pular um elemento
             i--;
@@ -122,39 +127,53 @@ void Player1_Bullets(GLdouble timeDiference)
     } 
 }
 
-void Player2_Keys(GLdouble timeDiference)
+void Player2_Keys(GLdouble timeDiference, GLdouble currentTime)
 {  
     //Treat keyPress
+    ArenaPlayer& p2 = g_players[1];
     if(keyStatus[(int)('o')])
     {
-        ArenaPlayer& p2 = g_players[1];
         p2.Move(g_arena,g_obstacles,g_players,timeDiference);
     }
     if(keyStatus[(int)('l')])
     {
-        ArenaPlayer& p2 = g_players[1];
         p2.Move(g_arena,g_obstacles,g_players,-timeDiference);
     }
     if(keyStatus[(int)('k')])
     {
-        ArenaPlayer& p2 = g_players[1];
         p2.Rotate(timeDiference);
     }
     if(keyStatus[SPECIAL_KEY])
     {
-        ArenaPlayer& p2 = g_players[1];
         p2.Rotate(-timeDiference);
-    } 
+    }
+    if (keyStatus[(int)('5')] && 
+        (currentTime-last_time_player_shoot[1]) > WEAPON_FIRERATE
+    )
+    {
+        p2.Shoot();
+        last_time_player_shoot[1] = currentTime;
+    }
+
+    if (keyStatus[(int)('4')])
+    {
+        p2.RotateGun(timeDiference);
+    }
+    if (keyStatus[(int)('6')])
+    {
+        p2.RotateGun(-timeDiference);
+    }
 }
 
 
-void Player1_Keys(GLdouble timeDiference)
+void Player1_Keys(GLdouble timeDiference, GLdouble currentTime)
 {   
     //Treat keyPress
     if(keyStatus[(int)('w')])
     {
         ArenaPlayer& p1 = g_players[0];
         p1.Move(g_arena,g_obstacles,g_players,timeDiference);
+        printf("Tentando Andar W\n");
     }
     if(keyStatus[(int)('s')])
     {
@@ -170,16 +189,24 @@ void Player1_Keys(GLdouble timeDiference)
     {
         ArenaPlayer& p1 = g_players[0];
         p1.Rotate(-timeDiference);
-    } 
+    }
+    if (MouseButton == LEFT_CLICK && MouseState == MOUSE_PRESSED && 
+        (currentTime-last_time_player_shoot[0]) > WEAPON_FIRERATE
+    )
+    {
+        g_players[0].Shoot();
+        last_time_player_shoot[0] = currentTime;
+    }
+
 }
 
 
-bool IsPlayerMoving(PositionDefinition p_pos, PositionDefinition saved_pos)
+bool IsMoving(PositionDefinition current_pos, PositionDefinition past_pos)
 {
     return(
-        p_pos.GetX()-saved_pos.GetX() +
-        p_pos.GetY()-saved_pos.GetY() +
-        p_pos.GetZ()-saved_pos.GetZ() != 0
+        current_pos.GetX()-past_pos.GetX() +
+        current_pos.GetY()-past_pos.GetY() +
+        current_pos.GetZ()-past_pos.GetZ() != 0
     );
 }
 
@@ -193,7 +220,7 @@ void AnimatePlayersLeg(GLdouble currentTime)
         // printf("time diff : %.2f\n",currentTime-last_time_record_state);
         for (unsigned int i = 0; i < g_players.size(); i++)
         {
-            if(IsPlayerMoving(g_players[i].GetPosition(),last_players_recorded_pos[i]))
+            if(IsMoving(g_players[i].GetPosition(),last_players_recorded_pos[i]))
             {
                 g_players[i].SetMovingStatus(true);
                 last_players_recorded_pos[i] =  g_players[i].GetPosition();
@@ -208,7 +235,6 @@ void AnimatePlayersLeg(GLdouble currentTime)
         last_time_record_state = currentTime;
     }
 }
-
 
 void ImprimePlacar(GLfloat x, GLfloat y)
 {
@@ -238,12 +264,14 @@ void renderScene(void)
         {
             obstacle.DrawObstacle();
         }
+        // int i = 0;
         for ( ArenaPlayer& player : g_players)
         {
             player.DrawPlayer();
-            for ( Bullet*& bullet : player.GetBulletVec())
+            // printf("Bullets : %ld || player : %d\n",player.GetBulletVec().size(),++i);
+            for ( Bullet& bullet : player.GetBulletVec())
             {
-                bullet->DrawBullet();
+                bullet.DrawBullet();
             }
         }
         // robo.Desenha();        
@@ -258,45 +286,57 @@ void renderScene(void)
 
 void keyPress(unsigned char key, int x, int y)
 {
-    // printf("Key : n:%d c:%c\n",key,key);
+    printf("Key : n:%d c:%c\n",key,key);
     switch (key)
     {
         case '1':
-             animate = !animate;
-             break;
+            animate = !animate;
+            break;
+        
+        //------------------Player 1------------------//
         case 'w':
         case 'W':
-             keyStatus[(int)('w')] = 1; //Using keyStatus trick
-             break;
+            keyStatus[(int)('w')] = 1; //Using keyStatus trick
+            break;
         case 's':
         case 'S':
-             keyStatus[(int)('s')] = 1; //Using keyStatus trick
-             break;
+            keyStatus[(int)('s')] = 1; //Using keyStatus trick
+            break;
         case 'a':
         case 'A':
-             keyStatus[(int)('a')] = 1; //Using keyStatus trick
-             break;
+            keyStatus[(int)('a')] = 1; //Using keyStatus trick
+            break;
         case 'd':
         case 'D':
-             keyStatus[(int)('d')] = 1; //Using keyStatus trick
-             break;
+            keyStatus[(int)('d')] = 1; //Using keyStatus trick
+            break;
 
+        //------------------Player 2------------------//
         case 'o':
         case 'O':
-             keyStatus[(int)('o')] = 1; //Using keyStatus trick
-             break;
+            keyStatus[(int)('o')] = 1; //Using keyStatus trick
+            break;
         case 'l':
         case 'L':
-             keyStatus[(int)('l')] = 1; //Using keyStatus trick
-             break;
+            keyStatus[(int)('l')] = 1; //Using keyStatus trick
+            break;
         case 'k':
         case 'K':
-             keyStatus[(int)('k')] = 1; //Using keyStatus trick
-             break;
+            keyStatus[(int)('k')] = 1; //Using keyStatus trick
+            break;
         case SPECIAL_KEY:
         case CAPS_SPECIAL_KEY:
-             keyStatus[(int)(SPECIAL_KEY)] = 1; //Using keyStatus trick
-             break;
+            keyStatus[(int)(SPECIAL_KEY)] = 1; //Using keyStatus trick
+            break;
+        case '5':
+            keyStatus[(int)('5')] = 1; //Using keyStatus trick
+            break;
+        case '4':
+            keyStatus[(int)('4')] = 1; //Using keyStatus trick
+            break;
+        case '6':
+            keyStatus[(int)('6')] = 1; //Using keyStatus trick
+            break;
             
         case 'f':
         case 'F':
@@ -360,12 +400,14 @@ void idle(void)
     //Atualiza o tempo do ultimo frame ocorrido
     previousTime = currentTime;
 
+    // past_p1_pos = g_players[0].GetPosition();
+    // past_b1_pos = g_players[0].GetBulletVec()[0].GetPosition();
+
     AnimatePlayersLeg(currentTime);
-    Player1_Keys(timeDiference);
-    Player2_Keys(timeDiference);
+    Player1_Keys(timeDiference,currentTime);
+    Player2_Keys(timeDiference,currentTime);
     Player1_Bullets(timeDiference);
     Player2_Bullets(timeDiference);
-    
     
     glutPostRedisplay();
 }
@@ -453,6 +495,18 @@ int load_svg(const char* path)
     }
     return 0;
 }
+
+void init_game()
+{
+    // Record Last Positions before start
+    last_time_record_state=glutGet(GLUT_ELAPSED_TIME);
+    for ( ArenaPlayer& player : g_players)
+    {
+        last_players_recorded_pos.push_back(player.GetPosition());
+        // Initial Player Velocity
+        player.GetVelocity().SetVy(PLAYER_SPEED);
+    }
+}
  
 int main(int argc, char *argv[])
 {
@@ -494,13 +548,8 @@ int main(int argc, char *argv[])
     glutMouseFunc(mouseClick);
     glutPassiveMotionFunc(globalmouseMotion);
 
+    init_game();
     gl_init();
-    // Record Last Positions before start
-    last_time_record_state=glutGet(GLUT_ELAPSED_TIME);
-    for ( ArenaPlayer& player : g_players)
-    {
-        last_players_recorded_pos.push_back(player.GetPosition());
-    }
     glutMainLoop();
  
     return 0;

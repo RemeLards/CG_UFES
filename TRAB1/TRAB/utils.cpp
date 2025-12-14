@@ -30,6 +30,8 @@ std::vector<CircleDefinition> svg_parser(const char* path)
 
     return circle_vec;
 }
+
+
 void PositionDefinition::PrintAttributes()
 {
     printf(" Colors:");
@@ -38,6 +40,7 @@ void PositionDefinition::PrintAttributes()
     printf(" z:  %.2f", this->GetZ());
     printf("\n\n");
 }
+
 
 void VelocityDefinition::PrintAttributes()
 {
@@ -48,6 +51,7 @@ void VelocityDefinition::PrintAttributes()
     printf("\n\n");
 }
 
+
 void RGBColor::PrintAttributes()
 {
     printf(" Colors:");
@@ -56,6 +60,7 @@ void RGBColor::PrintAttributes()
     printf(" b:  %.2f", this->GetB());
     printf("\n\n");
 }
+
 
 void ObjectDefinition::PrintAttributes()
 {
@@ -66,6 +71,7 @@ void ObjectDefinition::PrintAttributes()
     printf(" color: %s", this->GetColorName().c_str());
     printf("\n\n");
 }
+
 
 void ObjectDefinition::SetRBGByColorName()
 {
@@ -103,4 +109,20 @@ void ObjectDefinition::SetRBGByColorName()
         this->rgb.SetG(1.0);
         this->rgb.SetB(1.0);
     }
+}
+
+
+// Não Funciona porque o LastPosition apenas atualiza quando move
+// Resultado -> Sempre retorna que está move
+// Se der tempo penso em algo melhor
+// A posição é usada para colisão 
+// Por enquanto checo no loop do OpenGL mesmo
+// Pegando duas posições no tempo e vendo se são iguais
+bool EntityDefinition::IsMoving()
+{
+    return(
+        this->GetPosition().GetX()-this->GetLastPosition().GetX() +
+        this->GetPosition().GetY()-this->GetLastPosition().GetY() +
+        this->GetPosition().GetZ()-this->GetLastPosition().GetZ() != 0
+    );
 }

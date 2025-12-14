@@ -17,12 +17,13 @@ class PositionDefinition
         double _z;
 
     public:
+        PositionDefinition() :  _x(0.0),_y(0.0),_z(0.0) {};
         PositionDefinition(double x,double y, double z) 
             : _x(x),_y(y),_z(z) {};
         
-        double GetX() const { return _x; };
-        double GetY() const { return _y; };
-        double GetZ() const { return _z; };
+        const double& GetX() const { return _x; };
+        const double& GetY() const { return _y; };
+        const double& GetZ() const { return _z; };
 
         void SetX(double x) { _x = x; };
         void SetY(double y) { _y = y; };
@@ -42,9 +43,9 @@ class VelocityDefinition
         VelocityDefinition(double vx,double vy, double vz) 
             : _vx(vx),_vy(vy),_vz(vz) {};
         
-        double GetVx() const { return _vx; };
-        double GetVy() const { return _vy; };
-        double GetVz() const { return _vz; };
+        const double& GetVx() const { return _vx; };
+        const double& GetVy() const { return _vy; };
+        const double& GetVz() const { return _vz; };
 
         void SetVx(double vx) { _vx = vx; };
         void SetVy(double vy) { _vy = vy; };
@@ -63,9 +64,9 @@ class RGBColor
         RGBColor() : _r(0), _g(0), _b(0) {};
         RGBColor(double r,double g, double b) : _r(r), _g(g), _b(b) {};
 
-        double GetR() const {return _r;};
-        double GetG() const {return _g;};
-        double GetB() const {return _b;};
+        const double& GetR() const {return _r;};
+        const double& GetG() const {return _g;};
+        const double& GetB() const {return _b;};
 
         void SetR(double r) {_r = r;};
         void SetG(double g) {_g = g;};
@@ -84,7 +85,7 @@ class StateDefinition : public PositionDefinition
         StateDefinition(double x, double y, double z, double time) 
             : PositionDefinition(x,y,y),_time(time){};
         
-        double GetTime(){return _time;};
+        const double& GetTime() const {return _time;};
 
 };
 
@@ -122,7 +123,7 @@ class CircleDefinition : public ObjectDefinition
         CircleDefinition(double cx, double cy, double radius, const std::string& color)
             : ObjectDefinition(cx,cy,0,color), _radius(radius) {};
         
-        double GetRadius() const { return _radius; };
+        const double& GetRadius() const { return _radius; };
         void SetRadius(double r) { _radius = r; };
         
 };
@@ -133,16 +134,26 @@ class EntityDefinition : public ObjectDefinition
 {
     private:
         VelocityDefinition velocity;
+        PositionDefinition _last_pos;
+        bool _is_moving = false;
 
     public:
         EntityDefinition(
             double x, double y, double z,
             const std::string& color,
             double vx, double vy, double vz
-        ) : ObjectDefinition(x, y, z, color), velocity{vx, vy, vz}
+        ) : ObjectDefinition(x, y, z, color), velocity{vx, vy, vz}, _last_pos{x,y,z}
         {};
 
-        VelocityDefinition& GetVelocity() { return velocity; }
+        VelocityDefinition& GetVelocity() { return velocity; };
+
+        void SetLastPosition(PositionDefinition last_pos) {this->_last_pos = last_pos;};
+        const PositionDefinition& GetLastPosition() const {return this->_last_pos;};
+
+        void SetMovingStatus(bool is_moving) {this->_is_moving = is_moving ;};
+        const bool& GetMovingStatus() const {return this->_is_moving;};
+
+        bool IsMoving();
 };
 
 class CircularEntityDefinition : public EntityDefinition
@@ -159,7 +170,7 @@ class CircularEntityDefinition : public EntityDefinition
         ) : EntityDefinition(x, y, z, color,vx,vy,vz), _radius(radius)
         {};
 
-        double GetRadius() const { return _radius; };
+        const double& GetRadius() const { return _radius; };
         void SetRadius(double r) { _radius = r; };
 };
 
