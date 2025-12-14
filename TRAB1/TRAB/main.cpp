@@ -76,13 +76,10 @@ void globalmouseMotion(int x, int y)
    gPastMouseY = gCurrentMouseY;
    gCurrentMouseX = (x / ( (float) VHeight ));
    gCurrentMouseY = ((Height-y) / ((float) Height));
-//    printf("Current Mouse Pos -> x : %d || y  : %d\n",x,y);
 }
 
 void mouseClick(int button, int state, int x,int y)
 {
-//    printf("Mouse Pressed!\n");
-//    printf("button : %d || state : %d || x : %d || y : %d\n",button,state,x,y);
    
    if (button == LEFT_CLICK && state == MOUSE_PRESSED)
    {
@@ -136,7 +133,7 @@ void Player2_Keys(GLdouble timeDiference)
     if(keyStatus[(int)('l')])
     {
         ArenaPlayer& p2 = g_players[1];
-        p2.Move(g_arena,g_obstacles,g_players,timeDiference);
+        p2.Move(g_arena,g_obstacles,g_players,-timeDiference);
     }
     if(keyStatus[(int)('k')])
     {
@@ -162,7 +159,7 @@ void Player1_Keys(GLdouble timeDiference)
     if(keyStatus[(int)('s')])
     {
         ArenaPlayer& p1 = g_players[0];
-        p1.Move(g_arena,g_obstacles,g_players,timeDiference);
+        p1.Move(g_arena,g_obstacles,g_players,-timeDiference);
     }
     if(keyStatus[(int)('a')])
     {

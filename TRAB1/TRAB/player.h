@@ -17,7 +17,7 @@
 #define PLAYER_ROTATIONAL_SPEED 0.08 // Para mover para cima e para baixo se mantenha consistente
 #define PLAYER_HEALTH 3
 
-#define BULLET_VEL (2*PLAYER_SPEED)
+#define BULLET_VEL ((3.54*PLAYER_SPEED)*2.0) // (3.54*PLAYER_SPEED) = PLAYER_SPEED pra bala WTF ????
 #define BULLET_RADIUS 8
 #define BODY_X_RADIUS_MULTIPLER 2
 
