@@ -62,7 +62,7 @@ bool Bullet::InArena(CircularArena& arena)
 {
     return (
         this->SquareDistanceTo(arena.GetPosition().GetX(),arena.GetPosition().GetY()) 
-        <= arena.GetRadius()*arena.GetRadius()
+        <= (arena.GetRadius()-this->GetRadius())*(arena.GetRadius()-this->GetRadius())
     );
 }
 
@@ -76,7 +76,7 @@ bool Bullet::ObstacleCollision(CircularArena& arena, std::vector<CircularObstacl
                 obstacle.GetPosition().GetX(),
                 obstacle.GetPosition().GetY()
             );
-            double limit = obstacle.GetRadius() - this->Hitbox();
+            double limit = obstacle.GetRadius() + this->Hitbox();
             if ( player_distance_from_obstacle_center <= limit*limit )
             {
                 return true;
