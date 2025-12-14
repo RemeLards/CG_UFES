@@ -1,5 +1,18 @@
 #include "bullet.h"
 
+void Bullet::DrawBullet()
+{
+    glPushMatrix();
+        glTranslatef(
+            0,this->GetRadius(),0
+        );
+        DrawCircWithBorder(
+            this->GetRadius(),
+            this->GetRGB().GetR(),this->GetRGB().GetG(),this->GetRGB().GetB()
+        );
+    glPopMatrix();
+}
+
 bool Bullet::Delete(CircularArena& arena, std::vector<ArenaPlayer>& players_vec, std::vector<CircularObstacle>& obstacles_vec)
 {
     if( this->ObstacleCollision(arena,obstacles_vec) || this->PlayerCollision(arena,players_vec) )

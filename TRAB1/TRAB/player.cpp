@@ -1,12 +1,6 @@
 #include "player.h"
 
-// void ArenaPlayer::DeleteBullet(std::size_t index)
-// {
-//     Bullet* ptr = this->bullet_vec[index];
-//     this->bullet_vec.erase(this->bullet_vec.begin() + index);
-//     delete ptr;
-// }
-//  Player interaction -> Moving, Rotating and Shooting
+//----------Drawing------------//
 
 void ArenaPlayer::DrawLegs()
 {
@@ -23,9 +17,7 @@ void ArenaPlayer::DrawLegs()
             {
                 glRotatef(
                     180,
-                    0,
-                    0,
-                    1
+                    0,0,1
                 );
             }
             DrawRect(
@@ -45,10 +37,7 @@ void ArenaPlayer::DrawLegs()
             if(this->_last_leg_id == RIGHT_LEG_ID)
             {
                 glRotatef(
-                    180,
-                    0,
-                    0,
-                    1
+                    180,0,0,1
                 );
             }
             DrawRect(
@@ -61,6 +50,7 @@ void ArenaPlayer::DrawLegs()
     }
 }
 
+
 void ArenaPlayer::DrawArm()
 {
     glPushMatrix();
@@ -68,6 +58,10 @@ void ArenaPlayer::DrawArm()
             this->GetRadius() * BODY_X_RADIUS_MULTIPLER * ARM_DISTANCE_MULTIPLER,
             0,
             0
+        );
+        glRotatef(
+            this->gun_yaw,
+            0,0,1
         );
         DrawRectWithBorder(
             this->GetRadius()*ARM_HEIGHT_MULTIPLER,
@@ -102,6 +96,10 @@ void ArenaPlayer::DrawPlayer()
             -this->GetPosition().GetY(),
             0
         );
+        glRotatef(
+            this->yaw,
+            0,0,1
+        );
         this->DrawArm();
         this->DrawLegs();
         this->DrawBody();
@@ -109,33 +107,18 @@ void ArenaPlayer::DrawPlayer()
     glPopMatrix();
 }
 
-void ArenaPlayer::MoveInX(
-    CircularArena& arena,
-    std::vector<CircularObstacle>& obstacles_vec, 
-    std::vector<ArenaPlayer>& player_vec,
-    double dx)
-{
-    this->last_pos = this->GetPosition();
-    this->GetPosition().SetX(this->GetPosition().GetX() + dx);
 
-    if ( this->ArenaCollision(arena) || 
-         this->ObstacleCollision(arena,obstacles_vec) || 
-         this->PlayerCollision(arena,player_vec)
-    )
-    {
-        this->GetPosition() = last_pos;
-        return;
-    }
-}
+//----------Movement------------//
 
-void ArenaPlayer::MoveInY(
+void ArenaPlayer::Move(
     CircularArena& arena,
     std::vector<CircularObstacle>& obstacles_vec,
     std::vector<ArenaPlayer>& player_vec, 
-    double dy)
+    double dist)
 {
     this->last_pos = this->GetPosition();
-    this->GetPosition().SetY(this->GetPosition().GetY() + dy);
+    this->GetPosition().SetX(this->GetPosition().GetX() + dist*this->direction.GetX());
+    this->GetPosition().SetY(this->GetPosition().GetY() + dist*this->direction.GetY());
     
     if ( this->ArenaCollision(arena) || 
          this->ObstacleCollision(arena,obstacles_vec) || 
@@ -147,11 +130,24 @@ void ArenaPlayer::MoveInY(
     }
 }
 
+void ArenaPlayer::Rotate(double dtheta)
+{
+    this->yaw += dtheta;
+    if (yaw >= 360.0) yaw -= 360.0;
+    if (yaw <= -360.0) yaw += 360.0;
+
+    // Direction Vector
+    this->direction.SetX(sin(yaw*RADIANS));
+    this->direction.SetY(cos(yaw*RADIANS));
+}
+
+//----------Shotting-----------//
+
 void ArenaPlayer::Shoot(double pos_x, double pos_y)
 {
     // Fazer transformações
     Bullet* bullet = new Bullet(
-        0,0,0,"yellow",
+        0,0,0,this->GetColorName(),
         BULLET_VEL*cos(gun_yaw),BULLET_VEL*sin(gun_yaw),0,
         BULLET_RADIUS,this->GetId()
     );
@@ -160,7 +156,7 @@ void ArenaPlayer::Shoot(double pos_x, double pos_y)
 }
 
 
-// Collision
+//----------Collision------------//
 
 
 double ArenaPlayer::SquareDistanceTo(double x, double y)
@@ -249,21 +245,3 @@ bool ArenaPlayer::PlayerCollision(CircularArena& arena, std::vector<ArenaPlayer>
 
     return false;  
 }
-
-// Bullet* ArenaPlayer::BulletCollision(std::vector<Bullet*> bullet_vec)
-// {
-//     for (Bullet*& bullet : bullet_vec)
-//     {
-//         double player_distance_from_current_player = this->SquareDistanceTo(
-//             bullet->GetX(),
-//             bullet->GetY()
-//         );
-//         double limit = bullet->GetRadius() * bullet->GetRadius();
-//         if ( player_distance_from_current_player <=  limit )
-//         {
-//             return bullet;
-//         }
-//     }
-
-//     return NULL;
-// }

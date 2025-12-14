@@ -21,7 +21,15 @@
 #include <stdlib.h>
 
 #define INC_KEY 10 
-#define INC_MOVEKEYIDLE -0.08 // Para mover para cima e para baixo se mantenha consistente
+#define INC_MOVEKEYIDLE PLAYER_SPEED // Para mover para cima e para baixo se mantenha consistente
+#define INC_ROTATIONKEYIDLE PLAYER_ROTATIONAL_SPEED // Para mover para cima e para baixo se mantenha consistente
+
+#define SPECIAL_KEY 231 // isso é para o 'ç'
+#define CAPS_SPECIAL_KEY 199 // isso é para o 'ç
+
+#define LEFT_CLICK 0
+#define MOUSE_PRESSED 0 
+#define MOUSE_RELEASED 1 
 
 // debug
 int debug = 0;
@@ -59,6 +67,91 @@ Robo robo; //Um rodo
 Tiro * tiro = NULL; //Um tiro por vez
 Alvo alvo(0, 200); //Um alvo por vez
 
+
+//Mouse
+float gCurrentMouseX = 0;
+float gCurrentMouseY = 0;
+float gPastMouseX = 0;
+float gPastMouseY = 0;
+
+void globalmouseMotion(int x, int y)
+{
+   gPastMouseX = gCurrentMouseX;
+   gPastMouseY = gCurrentMouseY;
+   gCurrentMouseX = (x / ( (float) VHeight ));
+   gCurrentMouseY = ((Height-y) / ((float) Height));
+//    printf("Current Mouse Pos -> x : %d || y  : %d\n",x,y);
+}
+
+void mouseClick(int button, int state, int x,int y)
+{
+//    printf("Mouse Pressed!\n");
+//    printf("button : %d || state : %d || x : %d || y : %d\n",button,state,x,y);
+   
+   if (button == LEFT_CLICK && state == MOUSE_PRESSED)
+   {
+        //Player1 shoots
+   }
+
+}
+
+
+void Player2_Keys(GLdouble timeDiference)
+{   
+    double m_inc = INC_MOVEKEYIDLE;
+    double r_inc = INC_ROTATIONKEYIDLE;
+    //Treat keyPress
+    if(keyStatus[(int)('o')])
+    {
+        ArenaPlayer& p2 = g_players[1];
+        p2.Move(g_arena,g_obstacles,g_players,m_inc*timeDiference);
+    }
+    if(keyStatus[(int)('l')])
+    {
+        ArenaPlayer& p2 = g_players[1];
+        p2.Move(g_arena,g_obstacles,g_players,-m_inc*timeDiference);
+    }
+    if(keyStatus[(int)('k')])
+    {
+        ArenaPlayer& p2 = g_players[1];
+        p2.Rotate(r_inc*timeDiference);
+    }
+    if(keyStatus[SPECIAL_KEY])
+    {
+        ArenaPlayer& p2 = g_players[1];
+        p2.Rotate(-r_inc*timeDiference);
+    } 
+}
+
+
+void Player1_Keys(GLdouble timeDiference)
+{   
+    double m_inc = INC_MOVEKEYIDLE;
+    double r_inc = INC_ROTATIONKEYIDLE;
+    //Treat keyPress
+    if(keyStatus[(int)('w')])
+    {
+        ArenaPlayer& p1 = g_players[0];
+        p1.Move(g_arena,g_obstacles,g_players,m_inc*timeDiference);
+    }
+    if(keyStatus[(int)('s')])
+    {
+        ArenaPlayer& p1 = g_players[0];
+        p1.Move(g_arena,g_obstacles,g_players,-m_inc*timeDiference);
+    }
+    if(keyStatus[(int)('a')])
+    {
+        ArenaPlayer& p1 = g_players[0];
+        p1.Rotate(r_inc*timeDiference);
+    }
+    if(keyStatus[(int)('d')])
+    {
+        ArenaPlayer& p1 = g_players[0];
+        p1.Rotate(-r_inc*timeDiference);
+    } 
+}
+
+
 bool IsPlayerMoving(PositionDefinition p_pos, PositionDefinition saved_pos)
 {
     return(
@@ -67,6 +160,33 @@ bool IsPlayerMoving(PositionDefinition p_pos, PositionDefinition saved_pos)
         p_pos.GetZ()-saved_pos.GetZ() != 0
     );
 }
+
+
+void AnimatePlayersLeg(GLdouble currentTime)
+{
+    if ((currentTime-last_time_record_state) >= LEG_ANIMATION_DELAY_MS)
+    {
+        // printf("current time: %.2f\n",currentTime);
+        // printf("last time diff : %.2f\n",last_time_record_state);
+        // printf("time diff : %.2f\n",currentTime-last_time_record_state);
+        for (unsigned int i = 0; i < g_players.size(); i++)
+        {
+            if(IsPlayerMoving(g_players[i].GetPosition(),last_players_recorded_pos[i]))
+            {
+                g_players[i].SetMovingStatus(true);
+                last_players_recorded_pos[i] =  g_players[i].GetPosition();
+                if (g_players[i].GetLastLeg() == RIGHT_LEG_ID)
+                {
+                    g_players[i].SetCurrentLeg(LEFT_LEG_ID);
+                }
+                else g_players[i].SetCurrentLeg(RIGHT_LEG_ID);
+            }
+            else g_players[i].SetMovingStatus(false);
+        }
+        last_time_record_state = currentTime;
+    }
+}
+
 
 void ImprimePlacar(GLfloat x, GLfloat y)
 {
@@ -112,6 +232,7 @@ void renderScene(void)
 
 void keyPress(unsigned char key, int x, int y)
 {
+    // printf("Key : n:%d c:%c\n",key,key);
     switch (key)
     {
         case '1':
@@ -132,6 +253,23 @@ void keyPress(unsigned char key, int x, int y)
         case 'd':
         case 'D':
              keyStatus[(int)('d')] = 1; //Using keyStatus trick
+             break;
+
+        case 'o':
+        case 'O':
+             keyStatus[(int)('o')] = 1; //Using keyStatus trick
+             break;
+        case 'l':
+        case 'L':
+             keyStatus[(int)('l')] = 1; //Using keyStatus trick
+             break;
+        case 'k':
+        case 'K':
+             keyStatus[(int)('k')] = 1; //Using keyStatus trick
+             break;
+        case SPECIAL_KEY:
+        case CAPS_SPECIAL_KEY:
+             keyStatus[(int)(SPECIAL_KEY)] = 1; //Using keyStatus trick
              break;
             
         case 'f':
@@ -196,50 +334,9 @@ void idle(void)
     //Atualiza o tempo do ultimo frame ocorrido
     previousTime = currentTime;
 
-    if ((currentTime-last_time_record_state) >= LEG_ANIMATION_DELAY_MS)
-    {
-        // printf("current time: %.2f\n",currentTime);
-        // printf("last time diff : %.2f\n",last_time_record_state);
-        // printf("time diff : %.2f\n",currentTime-last_time_record_state);
-        for (unsigned int i = 0; i < g_players.size(); i++)
-        {
-            if(IsPlayerMoving(g_players[i].GetPosition(),last_players_recorded_pos[i]))
-            {
-                g_players[i].IsMoving(true);
-                last_players_recorded_pos[i] =  g_players[i].GetPosition();
-                if (g_players[i].GetLastLeg() == RIGHT_LEG_ID)
-                {
-                    g_players[i].SetCurrentLeg(LEFT_LEG_ID);
-                }
-                else g_players[i].SetCurrentLeg(RIGHT_LEG_ID);
-            }
-            else g_players[i].IsMoving(false);
-        }
-        last_time_record_state = currentTime;
-    }
-
-    double inc = INC_MOVEKEYIDLE;
-    //Treat keyPress
-    if(keyStatus[(int)('w')])
-    {
-        ArenaPlayer& p1 = g_players[0];
-        p1.MoveInY(g_arena,g_obstacles,g_players,inc*timeDiference);
-    }
-    if(keyStatus[(int)('s')])
-    {
-        ArenaPlayer& p1 = g_players[0];
-        p1.MoveInY(g_arena,g_obstacles,g_players,-inc*timeDiference);
-    }
-    if(keyStatus[(int)('a')])
-    {
-        ArenaPlayer& p1 = g_players[0];
-        p1.MoveInX(g_arena,g_obstacles,g_players,inc*timeDiference);
-    }
-    if(keyStatus[(int)('d')])
-    {
-        ArenaPlayer& p1 = g_players[0];
-        p1.MoveInX(g_arena,g_obstacles,g_players,-inc*timeDiference);
-    }
+    AnimatePlayersLeg(currentTime);
+    Player1_Keys(timeDiference);
+    Player2_Keys(timeDiference);
     
     //Trata o tiro (soh permite um tiro por vez)
     //Poderia usar uma lista para tratar varios tiros
@@ -394,24 +491,26 @@ int main(int argc, char *argv[])
     glutInitWindowSize(Width, Height);
     glutInitWindowPosition(150,50);
     glutCreateWindow("Joguin 2D");
- 
+
+    // Viewing Height=Width = Arena Diamater
+    VHeight=VWidth=2*g_arena.GetRadius();
+
     // Define callbacks.
     glutDisplayFunc(renderScene);
     glutKeyboardFunc(keyPress);
     glutIdleFunc(idle);
     glutKeyboardUpFunc(keyup);
+    // glutMotionFunc(mouseMotion);
+    glutMouseFunc(mouseClick);
+    glutPassiveMotionFunc(globalmouseMotion);
 
-    // Viewing Height=Width = Arena Diamater
-    VHeight=VWidth=2*g_arena.GetRadius();
     gl_init();
-
     // Record Last Positions before start
     last_time_record_state=glutGet(GLUT_ELAPSED_TIME);
     for ( ArenaPlayer& player : g_players)
     {
         last_players_recorded_pos.push_back(player.GetPosition());
     }
-
     glutMainLoop();
  
     return 0;

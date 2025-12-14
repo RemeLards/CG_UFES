@@ -13,9 +13,11 @@
 #include <math.h>
 
 
+#define PLAYER_SPEED -0.08 // Para mover para cima e para baixo se mantenha consistente
+#define PLAYER_ROTATIONAL_SPEED 0.08 // Para mover para cima e para baixo se mantenha consistente
 #define PLAYER_HEALTH 3
 
-#define BULLET_VEL 2
+#define BULLET_VEL (2*PLAYER_SPEED)
 #define BULLET_RADIUS 2
 #define BODY_X_RADIUS_MULTIPLER 2
 
@@ -35,9 +37,11 @@ class Bullet; // forward declaration
 class ArenaPlayer : public CircularEntityDefinition
 {
     private:
+        PositionDefinition direction = {0,1,0};
         PositionDefinition last_pos;
         std::vector<Bullet*> bullet_vec;
-        double gun_yaw;
+        double yaw = 0.0;
+        double gun_yaw = 0.0;
         short health = PLAYER_HEALTH;
         const int _id;
         bool _is_moving = false;
@@ -64,17 +68,12 @@ class ArenaPlayer : public CircularEntityDefinition
         void AnimatePlayer();
 
         // Player interaction -> Moving,Rotating and Shooting
-        void MoveInX(
-            CircularArena& arena,
-            std::vector<CircularObstacle>& obstacles_vec,
-            std::vector<ArenaPlayer>& player_vec,
-            double dx
-        );
-        void MoveInY(
+        void Rotate(double dtheta);
+        void Move(
             CircularArena& arena,
             std::vector<CircularObstacle>& obstacles_vec,
             std::vector<ArenaPlayer>& player_vec, 
-            double dy
+            double dist
         );
         void Shoot(double x,double y);
         void GotHit() { this->health--;};
@@ -93,7 +92,8 @@ class ArenaPlayer : public CircularEntityDefinition
         double Hitbox(){ return this->GetRadius(); };
         int GetId() { return this->_id; };
         std::vector<Bullet*> GetBulletVec() { return this->bullet_vec; };
-        void IsMoving(bool is_moving) {this->_is_moving = is_moving ;};
+        void SetMovingStatus(bool is_moving) {this->_is_moving = is_moving ;};
+        bool IsMoving(){return this->_is_moving; };
         short GetLastLeg() {return this->_last_leg_id;};
         void SetCurrentLeg(short leg_id) {this->_last_leg_id = leg_id;};
 
