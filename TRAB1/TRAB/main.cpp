@@ -241,16 +241,13 @@ void renderScene(void)
         {
             obstacle.DrawObstacle();
         }
-        int i = 0;
         for ( ArenaPlayer& player : g_players)
         {
             player.DrawPlayer();
-            printf(" player %d || Bullet Vec Size %ld\n",i+1,player.GetBulletVec().size());
             for ( Bullet*& bullet : player.GetBulletVec())
             {
                 bullet->DrawBullet();
             }
-            i++;
         }
         // robo.Desenha();        
         // if (tiro) tiro->Desenha();
