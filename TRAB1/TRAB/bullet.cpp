@@ -1,10 +1,37 @@
 #include "bullet.h"
 
+bool Bullet::Move(
+    CircularArena& arena,
+    std::vector<CircularObstacle>& obstacles_vec,
+    std::vector<ArenaPlayer>& players_vec, 
+    GLdouble timeDiference
+)
+{
+    this->GetPosition().SetX(
+        this->GetPosition().GetX()+ this->GetVelocity().GetVx() * timeDiference
+    );
+    this->GetPosition().SetY(
+        this->GetPosition().GetY()+ this->GetVelocity().GetVy() * timeDiference
+    );
+
+    if ( this->ObstacleCollision(arena,obstacles_vec) || 
+         this->PlayerCollision(arena,players_vec) || 
+         !(InArena(arena))
+    )
+    {
+        return false;
+    }
+
+    return true;
+}
+
 void Bullet::DrawBullet()
 {
     glPushMatrix();
         glTranslatef(
-            0,this->GetRadius(),0
+            this->GetPosition().GetX(),
+            -this->GetPosition().GetY(),
+            0
         );
         DrawCircWithBorder(
             this->GetRadius(),
@@ -49,7 +76,7 @@ bool Bullet::ObstacleCollision(CircularArena& arena, std::vector<CircularObstacl
                 obstacle.GetPosition().GetX(),
                 obstacle.GetPosition().GetY()
             );
-            double limit = obstacle.GetRadius() + this->Hitbox();
+            double limit = obstacle.GetRadius() - this->Hitbox();
             if ( player_distance_from_obstacle_center <= limit*limit )
             {
                 return true;

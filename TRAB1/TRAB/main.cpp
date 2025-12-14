@@ -21,15 +21,13 @@
 #include <stdlib.h>
 
 #define INC_KEY 10 
-#define INC_MOVEKEYIDLE PLAYER_SPEED // Para mover para cima e para baixo se mantenha consistente
-#define INC_ROTATIONKEYIDLE PLAYER_ROTATIONAL_SPEED // Para mover para cima e para baixo se mantenha consistente
 
 #define SPECIAL_KEY 231 // isso é para o 'ç'
 #define CAPS_SPECIAL_KEY 199 // isso é para o 'ç
-
 #define LEFT_CLICK 0
 #define MOUSE_PRESSED 0 
 #define MOUSE_RELEASED 1 
+#define LEG_ANIMATION_DELAY_MS 350.0
 
 // debug
 int debug = 0;
@@ -51,8 +49,6 @@ std::vector<CircularObstacle> g_obstacles;
 std::vector<ArenaPlayer> g_players;
 GLdouble last_time_record_state = 0;
 std::vector<PositionDefinition> last_players_recorded_pos;
-
-#define LEG_ANIMATION_DELAY_MS 350.0
 
 //Controla a animacao do robo
 int animate = 0;
@@ -90,64 +86,93 @@ void mouseClick(int button, int state, int x,int y)
    
    if (button == LEFT_CLICK && state == MOUSE_PRESSED)
    {
-        //Player1 shoots
+        g_players[0].Shoot();
    }
 
 }
 
+void Player2_Bullets(GLdouble timeDiference)
+{
+    std::vector<Bullet*>& bullet_vec = g_players[1].GetBulletVec();
+    for (unsigned int i=0; i<bullet_vec.size(); i++ )
+    {
+        Bullet* bullet = bullet_vec[i];
+        if (!bullet->Move(g_arena,g_obstacles,g_players,BULLET_VEL*timeDiference))
+        {
+            bullet_vec.erase(bullet_vec.begin() + i);
+            delete bullet;
+            // As proximas balas são movidas para trás
+            // logo o índice tem que atrasar para não pular um elemento
+            i--;
+        }
+    } 
+}
+
+void Player1_Bullets(GLdouble timeDiference)
+{
+    std::vector<Bullet*>& bullet_vec = g_players[0].GetBulletVec();
+    for (unsigned int i=0; i<bullet_vec.size(); i++ )
+    {
+        Bullet* bullet = bullet_vec[i];
+        if (!bullet->Move(g_arena,g_obstacles,g_players,BULLET_VEL*timeDiference))
+        {
+            bullet_vec.erase(bullet_vec.begin() + i);
+            delete bullet;
+            // As proximas balas são movidas para trás
+            // logo o índice tem que atrasar para não pular um elemento
+            i--;
+        }
+    } 
+}
 
 void Player2_Keys(GLdouble timeDiference)
-{   
-    double m_inc = INC_MOVEKEYIDLE;
-    double r_inc = INC_ROTATIONKEYIDLE;
+{  
     //Treat keyPress
     if(keyStatus[(int)('o')])
     {
         ArenaPlayer& p2 = g_players[1];
-        p2.Move(g_arena,g_obstacles,g_players,m_inc*timeDiference);
+        p2.Move(g_arena,g_obstacles,g_players,timeDiference);
     }
     if(keyStatus[(int)('l')])
     {
         ArenaPlayer& p2 = g_players[1];
-        p2.Move(g_arena,g_obstacles,g_players,-m_inc*timeDiference);
+        p2.Move(g_arena,g_obstacles,g_players,timeDiference);
     }
     if(keyStatus[(int)('k')])
     {
         ArenaPlayer& p2 = g_players[1];
-        p2.Rotate(r_inc*timeDiference);
+        p2.Rotate(timeDiference);
     }
     if(keyStatus[SPECIAL_KEY])
     {
         ArenaPlayer& p2 = g_players[1];
-        p2.Rotate(-r_inc*timeDiference);
+        p2.Rotate(-timeDiference);
     } 
 }
 
 
 void Player1_Keys(GLdouble timeDiference)
 {   
-    double m_inc = INC_MOVEKEYIDLE;
-    double r_inc = INC_ROTATIONKEYIDLE;
     //Treat keyPress
     if(keyStatus[(int)('w')])
     {
         ArenaPlayer& p1 = g_players[0];
-        p1.Move(g_arena,g_obstacles,g_players,m_inc*timeDiference);
+        p1.Move(g_arena,g_obstacles,g_players,timeDiference);
     }
     if(keyStatus[(int)('s')])
     {
         ArenaPlayer& p1 = g_players[0];
-        p1.Move(g_arena,g_obstacles,g_players,-m_inc*timeDiference);
+        p1.Move(g_arena,g_obstacles,g_players,timeDiference);
     }
     if(keyStatus[(int)('a')])
     {
         ArenaPlayer& p1 = g_players[0];
-        p1.Rotate(r_inc*timeDiference);
+        p1.Rotate(timeDiference);
     }
     if(keyStatus[(int)('d')])
     {
         ArenaPlayer& p1 = g_players[0];
-        p1.Rotate(-r_inc*timeDiference);
+        p1.Rotate(-timeDiference);
     } 
 }
 
@@ -204,6 +229,7 @@ void ImprimePlacar(GLfloat x, GLfloat y)
     }
 }
 
+
 void renderScene(void)
 {
     // Clear the screen.
@@ -215,10 +241,16 @@ void renderScene(void)
         {
             obstacle.DrawObstacle();
         }
-
-        for ( ArenaPlayer& obstacle : g_players)
+        int i = 0;
+        for ( ArenaPlayer& player : g_players)
         {
-            obstacle.DrawPlayer();
+            player.DrawPlayer();
+            printf(" player %d || Bullet Vec Size %ld\n",i+1,player.GetBulletVec().size());
+            for ( Bullet*& bullet : player.GetBulletVec())
+            {
+                bullet->DrawBullet();
+            }
+            i++;
         }
         // robo.Desenha();        
         // if (tiro) tiro->Desenha();
@@ -337,45 +369,9 @@ void idle(void)
     AnimatePlayersLeg(currentTime);
     Player1_Keys(timeDiference);
     Player2_Keys(timeDiference);
+    Player1_Bullets(timeDiference);
+    Player2_Bullets(timeDiference);
     
-    //Trata o tiro (soh permite um tiro por vez)
-    //Poderia usar uma lista para tratar varios tiros
-    if(tiro)
-    {
-        tiro->Move(timeDiference);
-
-        //Trata colisao
-        if (alvo.Atingido(tiro))
-        {
-            alvo.Recria(rand()%500 - 250, 200);
-            delete tiro;
-            tiro = NULL;
-            atingido++; // increments the ammount of ball hits
-        }
-    }
-
-    if (tiro)
-    {
-        if (!tiro->Valido())
-        { 
-            delete tiro;
-            tiro = NULL;
-        }
-    }
-
-    
-    
-    //Control animation
-    if (animate){
-        static int dir = 1;
-        if (robo.ObtemX() > (VWidth/2)){
-            dir *= -1;
-        }
-        else if (robo.ObtemX() < -(VWidth/2)){
-            dir *= -1;
-        }
-        robo.MoveEmX(dir*INC_MOVEKEYIDLE);
-    }
     
     glutPostRedisplay();
 }

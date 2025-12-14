@@ -18,7 +18,7 @@
 #define PLAYER_HEALTH 3
 
 #define BULLET_VEL (2*PLAYER_SPEED)
-#define BULLET_RADIUS 2
+#define BULLET_RADIUS 8
 #define BODY_X_RADIUS_MULTIPLER 2
 
 #define ARM_DISTANCE_MULTIPLER 0.7
@@ -68,14 +68,14 @@ class ArenaPlayer : public CircularEntityDefinition
         void AnimatePlayer();
 
         // Player interaction -> Moving,Rotating and Shooting
-        void Rotate(double dtheta);
+        void Rotate(GLdouble timeDiference);
         void Move(
             CircularArena& arena,
             std::vector<CircularObstacle>& obstacles_vec,
             std::vector<ArenaPlayer>& player_vec, 
-            double dist
+            GLdouble timeDiference
         );
-        void Shoot(double x,double y);
+        void Shoot();
         void GotHit() { this->health--;};
         // void DeleteBullet(std::size_t index);
         // int GetBulletIndex(Bullet* bullet);
@@ -91,7 +91,7 @@ class ArenaPlayer : public CircularEntityDefinition
         // Pos and Hitbox
         double Hitbox(){ return this->GetRadius(); };
         int GetId() { return this->_id; };
-        std::vector<Bullet*> GetBulletVec() { return this->bullet_vec; };
+        std::vector<Bullet*>& GetBulletVec() { return this->bullet_vec; };
         void SetMovingStatus(bool is_moving) {this->_is_moving = is_moving ;};
         bool IsMoving(){return this->_is_moving; };
         short GetLastLeg() {return this->_last_leg_id;};

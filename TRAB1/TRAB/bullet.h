@@ -36,7 +36,12 @@ class Bullet : public CircularEntityDefinition
         {};
 
         void DrawBullet();
-        void Move(GLdouble timeDiference);
+        bool Move(
+            CircularArena& arena,
+            std::vector<CircularObstacle>& obstacles_vec,
+            std::vector<ArenaPlayer>& player_vec, 
+            GLdouble timeDiference
+        );
         bool Delete(CircularArena& arena, std::vector<ArenaPlayer>& players_vec, std::vector<CircularObstacle>& obstacles_vec);
 
         // Poderia dizer quero toda entidade da arena tem isso, mas deixa ... se complicar troco

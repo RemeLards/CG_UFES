@@ -114,11 +114,15 @@ void ArenaPlayer::Move(
     CircularArena& arena,
     std::vector<CircularObstacle>& obstacles_vec,
     std::vector<ArenaPlayer>& player_vec, 
-    double dist)
+    GLdouble timeDiference)
 {
     this->last_pos = this->GetPosition();
-    this->GetPosition().SetX(this->GetPosition().GetX() + dist*this->direction.GetX());
-    this->GetPosition().SetY(this->GetPosition().GetY() + dist*this->direction.GetY());
+    this->GetPosition().SetX(
+        this->GetPosition().GetX() + (timeDiference*PLAYER_SPEED)*this->direction.GetX()
+    );
+    this->GetPosition().SetY(
+        this->GetPosition().GetY() + (timeDiference*PLAYER_SPEED)*this->direction.GetY()
+    );
     
     if ( this->ArenaCollision(arena) || 
          this->ObstacleCollision(arena,obstacles_vec) || 
@@ -130,9 +134,9 @@ void ArenaPlayer::Move(
     }
 }
 
-void ArenaPlayer::Rotate(double dtheta)
+void ArenaPlayer::Rotate(GLdouble timeDiference)
 {
-    this->yaw += dtheta;
+    this->yaw += PLAYER_ROTATIONAL_SPEED*timeDiference;
     if (yaw >= 360.0) yaw -= 360.0;
     if (yaw <= -360.0) yaw += 360.0;
 
@@ -143,16 +147,60 @@ void ArenaPlayer::Rotate(double dtheta)
 
 //----------Shotting-----------//
 
-void ArenaPlayer::Shoot(double pos_x, double pos_y)
+void ArenaPlayer::Shoot()
 {
-    // Fazer transformações
-    Bullet* bullet = new Bullet(
-        0,0,0,this->GetColorName(),
-        BULLET_VEL*cos(gun_yaw),BULLET_VEL*sin(gun_yaw),0,
-        BULLET_RADIUS,this->GetId()
-    );
+    glPushMatrix();
+        glTranslatef(
+            this->GetPosition().GetX(),
+            -this->GetPosition().GetY(),
+            0
+        );
+        glRotatef(
+            this->yaw,
+            0,0,1
+        );
+        glTranslatef(
+            this->GetRadius() * BODY_X_RADIUS_MULTIPLER * ARM_DISTANCE_MULTIPLER,
+            0,
+            0
+        );
+        glRotatef(
+            this->gun_yaw,
+            0,0,1
+        );
+        glTranslatef(
+            0,
+            this->GetRadius()*ARM_HEIGHT_MULTIPLER+BULLET_RADIUS,
+            0
+        );
+        
+        // https://registry.khronos.org/OpenGL-Refpages/gl2.1/xhtml/glGet.xml
+        // GL_MODELVIEW_MATRIX
+        // params returns sixteen values: 
+        // the modelview matrix on the top of the modelview matrix stack.
+        // Initially this matrix is the identity matrix.
 
-    this->bullet_vec.push_back(bullet);
+        GLfloat modelview_matrix[16];
+        glGetFloatv(GL_MODELVIEW_MATRIX, modelview_matrix);
+
+        double bullet_x = modelview_matrix[12]; // X da matriz da translação
+        double bullet_y = modelview_matrix[13]; // Y da matriz da translação
+        double bullet_z = modelview_matrix[14]; // Z da matriz da translação
+
+        // Inicialmente a bala está alinhada com o eixo Y
+        // Portanto pegamos as projeções devido as rotações na coluna do eixo Y
+        double bullet_x_angle = modelview_matrix[4]; // Angulo em X
+        double bullet_y_angle = modelview_matrix[5]; // Angulo em Y
+
+        Bullet* bullet = new Bullet(
+            bullet_x,-bullet_y,bullet_z,
+            this->GetColorName(),
+            BULLET_VEL*bullet_x_angle,
+            -BULLET_VEL*bullet_y_angle,0,
+            BULLET_RADIUS,this->GetId()
+        );
+        this->bullet_vec.push_back(bullet);
+    glPopMatrix();
 }
 
 
