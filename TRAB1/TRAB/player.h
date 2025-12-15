@@ -40,7 +40,6 @@ class ArenaPlayer : public CircularEntityDefinition
     private:
         PositionDefinition direction = {0,1,0};
         std::vector<Bullet> bullet_vec;
-        double yaw = 0.0;
         double gun_yaw = 0.0;
         short health = PLAYER_HEALTH;
         const int _id;
@@ -48,15 +47,20 @@ class ArenaPlayer : public CircularEntityDefinition
         bool is_leg_rotated = false;
         
     public:
+        ArenaPlayer()
+          : CircularEntityDefinition(),gun_yaw(0),_id(0)
+        {};
         ArenaPlayer(
             double x, double y, double z,
+            double roll ,double pitch, double yaw,
             const std::string& color,
             double vx, double vy, double vz,
             double head_radius, int id
 
-        ):  CircularEntityDefinition(x,y,z,color,vx,vy,vz,head_radius),
+        ) :  CircularEntityDefinition(x,y,z,roll,pitch,yaw,color,vx,vy,vz,head_radius),
             gun_yaw(0),
-            _id(id) {};
+            _id(id)
+        {};
 
         // Drawing
         void DrawBody();
@@ -99,8 +103,6 @@ class ArenaPlayer : public CircularEntityDefinition
 
         void SetDirection(PositionDefinition dir) {this->direction=dir;};
         PositionDefinition GetDirection() const {return this->direction;};
-        void SetYaw(double yaw) {this->yaw=yaw;};
-        double GetYaw() const {return this->yaw;};
         
         void SetGunYaw(double g_yaw) {this->gun_yaw=g_yaw;};
 

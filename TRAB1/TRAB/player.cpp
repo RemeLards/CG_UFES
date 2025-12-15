@@ -97,7 +97,7 @@ void ArenaPlayer::DrawPlayer()
             0
         );
         glRotatef(
-            this->yaw,
+            this->GetOrientation().GetYaw(),
             0,0,1
         );
         this->DrawLegs();
@@ -148,13 +148,13 @@ void ArenaPlayer::Move(
 
 void ArenaPlayer::Rotate(GLdouble timeDiference)
 {
-    this->yaw += PLAYER_ROTATIONAL_SPEED*timeDiference;
-    if (this->yaw >= 360.0) this->yaw -= 360.0;
-    if (this->yaw <= -360.0) this->yaw += 360.0;
+    this->GetOrientation().SetYaw(this->GetOrientation().GetYaw()+PLAYER_ROTATIONAL_SPEED*timeDiference);
+    if (this->GetOrientation().GetYaw() >= 360.0)  this->GetOrientation().SetYaw(this->GetOrientation().GetYaw() - 360.0);
+    if (this->GetOrientation().GetYaw() <= -360.0) this->GetOrientation().SetYaw(this->GetOrientation().GetYaw() + 360.0);
 
     // Direction Vector
-    this->direction.SetX(sin(this->yaw*RADIANS));
-    this->direction.SetY(cos(this->yaw*RADIANS));
+    this->direction.SetX(sin(this->GetOrientation().GetYaw()*RADIANS));
+    this->direction.SetY(cos(this->GetOrientation().GetYaw()*RADIANS));
 
     // Velocity Vector
     this->GetVelocity().SetVx(-PLAYER_SPEED*this->direction.GetX());
@@ -179,7 +179,7 @@ void ArenaPlayer::Shoot()
             0
         );
         glRotatef(
-            this->yaw,
+            this->GetOrientation().GetYaw(),
             0,0,1
         );
         glTranslatef(
@@ -217,6 +217,7 @@ void ArenaPlayer::Shoot()
 
         this->bullet_vec.emplace_back(
             bullet_x,-bullet_y,bullet_z,
+            0.0,0.0,0.0,
             this->GetColorName(),
             BULLET_VEL*bullet_x_angle,
             -BULLET_VEL*bullet_y_angle,0,

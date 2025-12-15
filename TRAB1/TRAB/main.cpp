@@ -364,15 +364,15 @@ void init_game(void)
         // printf("Thetha : %.2f\n",dtheta);
         // Removo o Offset de 90 graus e alinho os personagens
 
-        p1.SetYaw(-90-dtheta+180);
-        p2.SetYaw(-90-dtheta);
+        p1.GetOrientation().SetYaw(-90-dtheta+180);
+        p2.GetOrientation().SetYaw(-90-dtheta);
         // p1.SetYaw(0); // Testado BUG que deu
         // p2.SetYaw(0);
         p1.Rotate(0); // Updates Direction Vector
         p2.Rotate(0); // Updates Direction Vector
 
-        initial_players_angle.push_back(p1.GetYaw());
-        initial_players_angle.push_back(p2.GetYaw());
+        initial_players_angle.push_back(p1.GetOrientation().GetYaw());
+        initial_players_angle.push_back(p2.GetOrientation().GetYaw());
     }
 
     last_players_recorded_pos.clear();
@@ -392,7 +392,7 @@ void init_game(void)
                 player.GetPosition().SetZ(initial_players_pos[i].GetZ());
                 player.SetLastPosition(initial_players_pos[i]);
             }
-            player.SetYaw(initial_players_angle[i]); // puts in the start Yaw
+            player.GetOrientation().SetYaw(initial_players_angle[i]); // puts in the start Yaw
             player.Rotate(0); // Updates Direction vector
             player.SetGunYaw(0.0); // puts in the start gun yaw
             player.SetMovingStatus(false);

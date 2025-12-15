@@ -13,8 +13,6 @@
 #include "arena.h"
 #include "arena_obstacles.h"
 
-#define radiusTiro 5
-
 class ArenaPlayer; // forward declaration
 
 class Bullet : public CircularEntityDefinition
@@ -24,15 +22,18 @@ class Bullet : public CircularEntityDefinition
         int _owner;
 
     public:
+        Bullet()
+          : CircularEntityDefinition(), _owner(0)
+        {};
 
         Bullet(
             double x, double y, double z,
+            double roll ,double pitch, double yaw,
             const std::string& color,
             double vx, double vy, double vz,
             double bullet_radius, int owner
-        )
-        : CircularEntityDefinition(x,y,z,color,vx,vy,vz,bullet_radius),
-        _owner(owner) 
+        ) : CircularEntityDefinition(x,y,z,roll,pitch,yaw,color,vx,vy,vz,bullet_radius),
+          _owner(owner) 
         {};
 
         void DrawBullet();

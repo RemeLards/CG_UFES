@@ -11,6 +11,15 @@ void PositionDefinition::PrintAttributes()
     printf("\n\n");
 }
 
+void OrientationDefinition::PrintAttributes()
+{
+    printf(" Colors:");
+    printf(" roll: %.2f|",  this->GetRoll());
+    printf(" pitch: %.2f|", this->GetPitch());
+    printf(" yaw:  %.2f",   this->GetYaw());
+    printf("\n\n");
+}
+
 
 void VelocityDefinition::PrintAttributes()
 {

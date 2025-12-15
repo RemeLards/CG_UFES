@@ -34,6 +34,7 @@ std::optional<std::vector<ArenaPlayer>> players_getter(
                     circle.GetPosition().GetX() - arena.GetPosition().GetX(),
                     circle.GetPosition().GetY() - arena.GetPosition().GetY(),
                     0 - arena.GetPosition().GetZ(),
+                    0.0,0.0,0.0,
                     circle.GetColorName(),
                     0,0,0,
                     circle.GetRadius(),
