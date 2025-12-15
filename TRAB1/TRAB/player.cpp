@@ -108,7 +108,33 @@ void ArenaPlayer::DrawPlayer()
 }
 
 
-//----------Movement------------//
+bool ArenaPlayer::IsMoving()
+{
+    return(
+        this->GetPosition().GetX()-this->last_animation_attempt_position.GetX() +
+        this->GetPosition().GetY()-this->last_animation_attempt_position.GetX() +
+        this->GetPosition().GetZ()-this->last_animation_attempt_position.GetY() != 0
+    );
+}
+
+
+void ArenaPlayer::AnimatePlayer()
+{
+    if(this->IsMoving())
+    {
+        this->SetMovingStatus(true);
+        this->last_animation_attempt_position = this->GetPosition();
+        if (this->GetLastLeg() == RIGHT_LEG_ID)
+        {
+            this->SetCurrentLeg(LEFT_LEG_ID);
+        }
+        else this->SetCurrentLeg(RIGHT_LEG_ID);
+    }
+    else this->SetMovingStatus(false);
+}
+
+
+//----------Interaction------------//
 
 void ArenaPlayer::Move(
     CircularArena& arena,
@@ -146,6 +172,7 @@ void ArenaPlayer::Move(
     // );
 }
 
+
 void ArenaPlayer::Rotate(GLdouble timeDiference)
 {
     this->GetOrientation().SetYaw(this->GetOrientation().GetYaw()+PLAYER_ROTATIONAL_SPEED*timeDiference);
@@ -161,6 +188,7 @@ void ArenaPlayer::Rotate(GLdouble timeDiference)
     this->GetVelocity().SetVy(-PLAYER_SPEED*this->direction.GetY());
 }
 
+
 void ArenaPlayer::RotateGun(GLdouble timeDiference)
 {
     this->gun_yaw += GUN_ROTATIONAL_SPEED*timeDiference;
@@ -168,7 +196,6 @@ void ArenaPlayer::RotateGun(GLdouble timeDiference)
     if (this->gun_yaw <= -45.0) this->gun_yaw = -45.0;
 }
 
-//----------Shotting-----------//
 
 void ArenaPlayer::Shoot()
 {

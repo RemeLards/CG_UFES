@@ -54,7 +54,7 @@ CircularArena g_arena;
 std::vector<CircularObstacle> g_obstacles;
 std::vector<ArenaPlayer> g_players;
 
-GLdouble last_time_record_state = 0;
+GLdouble last_animation_attempt_time = 0;
 std::vector<PositionDefinition> last_players_recorded_pos;
 
 std::vector<GLdouble> last_time_player_shoot = {0.0,0.0};
@@ -252,38 +252,15 @@ void Player1_Keys(GLdouble timeDiference, GLdouble currentTime)
 }
 
 
-bool IsMoving(PositionDefinition current_pos, PositionDefinition past_pos)
-{
-    return(
-        current_pos.GetX()-past_pos.GetX() +
-        current_pos.GetY()-past_pos.GetY() +
-        current_pos.GetZ()-past_pos.GetZ() != 0
-    );
-}
-
-
 void AnimatePlayersLeg(GLdouble currentTime)
 {
-    if ((currentTime-last_time_record_state) >= LEG_ANIMATION_DELAY_MS)
+    if ((currentTime-last_animation_attempt_time) >= LEG_ANIMATION_DELAY_MS)
     {
-        // printf("current time: %.2f\n",currentTime);
-        // printf("last time diff : %.2f\n",last_time_record_state);
-        // printf("time diff : %.2f\n",currentTime-last_time_record_state);
-        for (unsigned int i = 0; i < g_players.size(); i++)
+        for ( ArenaPlayer& player: g_players)
         {
-            if(IsMoving(g_players[i].GetPosition(),last_players_recorded_pos[i]))
-            {
-                g_players[i].SetMovingStatus(true);
-                last_players_recorded_pos[i] =  g_players[i].GetPosition();
-                if (g_players[i].GetLastLeg() == RIGHT_LEG_ID)
-                {
-                    g_players[i].SetCurrentLeg(LEFT_LEG_ID);
-                }
-                else g_players[i].SetCurrentLeg(RIGHT_LEG_ID);
-            }
-            else g_players[i].SetMovingStatus(false);
+            player.AnimatePlayer();
         }
-        last_time_record_state = currentTime;
+        last_animation_attempt_time = currentTime;
     }
 }
 
@@ -376,7 +353,8 @@ void init_game(void)
     }
 
     last_players_recorded_pos.clear();
-    last_time_record_state=glutGet(GLUT_ELAPSED_TIME);
+    last_animation_attempt_time=glutGet(GLUT_ELAPSED_TIME);
+    
     for (unsigned int i = 0; i < g_players.size(); i++)
     {
         ArenaPlayer& player = g_players[i];

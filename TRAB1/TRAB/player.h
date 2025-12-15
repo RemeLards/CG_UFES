@@ -38,7 +38,8 @@ class Bullet; // forward declaration
 class ArenaPlayer : public CircularEntityDefinition
 {
     private:
-        PositionDefinition direction = {0,1,0};
+        PositionDefinition direction = {0,1,0}; // a Classe podia estar com outro nome, porém apenas aproveitei a classe
+        PositionDefinition last_animation_attempt_position;
         std::vector<Bullet> bullet_vec;
         double gun_yaw = 0.0;
         short health = PLAYER_HEALTH;
@@ -58,6 +59,7 @@ class ArenaPlayer : public CircularEntityDefinition
             double head_radius, int id
 
         ) :  CircularEntityDefinition(x,y,z,roll,pitch,yaw,color,vx,vy,vz,head_radius),
+            last_animation_attempt_position({x,y,z}),
             gun_yaw(0),
             _id(id)
         {};
@@ -80,6 +82,7 @@ class ArenaPlayer : public CircularEntityDefinition
         );
         void Shoot();
         void GotHit() { this->health--;};
+        bool IsMoving();
         // void DeleteBullet(std::size_t index);
         // int GetBulletIndex(Bullet* bullet);
 
