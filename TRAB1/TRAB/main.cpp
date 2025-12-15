@@ -384,21 +384,12 @@ void init_game(void)
         );
         dtheta = (dtheta/RADIANS);
 
-        // printf("Thetha : %.2f\n",dtheta);
-        // Removo o Offset de 90 graus e alinho os personagens
 
         p1.GetOrientation().SetYaw(-90-dtheta+180);
         p2.GetOrientation().SetYaw(-90-dtheta);
-        // printf("------------------\n");
-        // p1.GetDirection().PrintAttributes();
-        // printf("------------------\n");
-        // p2.GetDirection().PrintAttributes();
+
         p1.Rotate(0); // Updates Direction Vector
         p2.Rotate(0); // Updates Direction Vector
-        // printf("------------------\n");
-        // p1.GetDirection().PrintAttributes();
-        // printf("------------------\n");
-        // p2.GetDirection().PrintAttributes();
 
         initial_players_angle.push_back(p1.GetOrientation().GetYaw());
         initial_players_angle.push_back(p2.GetOrientation().GetYaw());
@@ -426,6 +417,7 @@ void init_game(void)
             player.Rotate(0); // Updates Direction vector
             player.SetGunYaw(0.0); // puts in the start gun yaw
             player.SetMovingStatus(false);
+            player.SetLastAnimationAttemptPosition(player.GetPosition());
         }
         if(first_start)
         {
@@ -532,16 +524,6 @@ void ResetKeyStatus(void)
 }
 
 
-// double PositionDiffSquared(PositionDefinition current_pos, PositionDefinition past_pos)
-// {
-//     return(
-//         (current_pos.GetX()-past_pos.GetX())*(current_pos.GetX()-past_pos.GetX()) +
-//         (current_pos.GetY()-past_pos.GetY())*(current_pos.GetY()-past_pos.GetY()) +
-//         (current_pos.GetZ()-past_pos.GetZ())*(current_pos.GetZ()-past_pos.GetZ()) 
-//     );
-// }
-
-
 void idle(void)
 {
     static GLdouble previousTime = glutGet(GLUT_ELAPSED_TIME);
@@ -555,12 +537,6 @@ void idle(void)
 
     //Atualiza o tempo do ultimo frame ocorrido
     previousTime = currentTime;
-
-    //past_p1_pos = g_players[0].GetPosition();
-    //if (g_players[0].GetBulletVec().size() > 0)
-    //{
-    //     past_b1_pos = g_players[0].GetBulletVec()[0].GetPosition();
-    //}
 
     if (!game_finished)
     {
@@ -578,13 +554,6 @@ void idle(void)
         Player1_Bullets(timeDiference*TIME_S);
         Player2_Bullets(timeDiference*TIME_S);
 
-        // printf("Player Position Diff : %.5f\n",PositionDiffSquared(past_p1_pos,g_players[0].GetPosition()));
-        // printf("Player Velocity Squared : %.5f\n",PLAYER_SPEED*PLAYER_SPEED*timeDiference*TIME_S);
-        // if (g_players[0].GetBulletVec().size() > 0)
-        // {
-        //     printf("Bullet Position Diff : %.5f\n",PositionDiffSquared(past_b1_pos,g_players[0].GetBulletVec()[0].GetPosition()));
-        //     printf("Bullet Velocity Squared : %.5f\n",BULLET_VEL*BULLET_VEL*timeDiference*TIME_S);
-        // }
         
         glutPostRedisplay();
     }

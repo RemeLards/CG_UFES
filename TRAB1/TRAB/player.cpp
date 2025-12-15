@@ -146,28 +146,15 @@ void ArenaPlayer::Move(
     GLdouble timeDiference)
 {
     // Fiz pegando a cópia não referência, consertar depois
-    // printf("Initial Last Pos x:%.2f|| z:%.2f|| z:%.2f\n",
-    //     this->GetLastPosition().GetX(),this->GetLastPosition().GetY(),this->GetLastPosition().GetZ()
-    // );
+
     this->SetLastPosition(this->GetPosition());
 
-    // printf("\n-------------------------\n");
-    // printf("Pre\n");
-    // this->GetPosition().PrintAttributes();
-    // this->GetVelocity().PrintAttributes();
     this->GetPosition().SetX(
         this->GetPosition().GetX() + this->GetVelocity().GetVx() * timeDiference
     );
     this->GetPosition().SetY(
         this->GetPosition().GetY() + this->GetVelocity().GetVy() * timeDiference
     );
-    // printf("-------------------------\n");
-    // printf("After\n");
-    // this->GetPosition().PrintAttributes();
-    // this->GetVelocity().PrintAttributes();
-    // printf("Initial Current Pos x:%.2f|| z:%.2f|| z:%.2f\n",
-    //     this->GetPosition().GetX(),this->GetPosition().GetY(),this->GetPosition().GetZ()
-    // );
     
     if ( this->ArenaCollision(arena) || 
          this->ObstacleCollision(arena,obstacles_vec) || 
@@ -176,9 +163,6 @@ void ArenaPlayer::Move(
     {
         this->GetPosition() = this->GetLastPosition();
     }
-    // printf("Updated Current Pos x:%.2f|| z:%.2f|| z:%.2f\n",
-    //     this->GetPosition().GetX(),this->GetPosition().GetY(),this->GetPosition().GetZ()
-    // );
 }
 
 
@@ -195,10 +179,6 @@ void ArenaPlayer::Rotate(GLdouble timeDiference)
     // Velocity Vector
     this->GetVelocity().SetVx(-PLAYER_SPEED*this->direction.GetX());
     this->GetVelocity().SetVy(-PLAYER_SPEED*this->direction.GetY());
-    // printf("-------------------------\n");
-    // this->GetOrientation().PrintAttributes();
-    // this->GetVelocity().PrintAttributes();
-    // printf("-------------------------\n");
 }
 
 

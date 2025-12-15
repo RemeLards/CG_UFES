@@ -110,6 +110,8 @@ class ArenaPlayer : public CircularEntityDefinition
         void SetGunYaw(double g_yaw) {this->gun_yaw=g_yaw;};
 
         int& GetID() {return this->_id;};
+        void SetLastAnimationAttemptPosition(PositionDefinition pos)
+            {this->last_animation_attempt_position = pos;};
 };
 
 #endif
