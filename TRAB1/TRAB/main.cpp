@@ -20,6 +20,7 @@
 
 #define SPECIAL_KEY 231 // isso é para o 'ç'
 #define CAPS_SPECIAL_KEY 199 // isso é para o 'ç
+#define ESC_KEY 27
 
 #define LEFT_CLICK 0
 #define MOUSE_PRESSED 0 
@@ -28,7 +29,7 @@
 #define TIME_S 0.001
 #define LEG_ANIMATION_DELAY_MS 350.0
 #define WEAPON_FIRERATE 200.0
-#define MOUSE_SENSITIVY 1.0
+#define MOUSE_SENSITIVY 2.0
 
 // debug
 int debug = 0;
@@ -291,7 +292,7 @@ void ImprimePlacar(GLfloat x, GLfloat y, int player)
 {
     //Cria a string a ser impressa
     static char *tmpStr;
-    if (game_winner == NO_PLAYER) sprintf(str, "P%d Health: %d",player-1, g_players[player-1].GetHealth());
+    if (game_winner == NO_PLAYER) sprintf(str, "P%d Health: %d",player, g_players[player-1].GetHealth());
     else if (game_winner == PLAYER1_WON) sprintf(str, "P%d Wins",PLAYER1_ID);
     else if (game_winner == PLAYER2_WON) sprintf(str, "P%d Wins",PLAYER2_ID);
     else if (game_winner == DRAW) sprintf(str, "Draw");
@@ -462,13 +463,14 @@ void keyPress(unsigned char key, int x, int y)
             keyStatus[(int)('6')] = 1; //Using keyStatus trick
             break;
 
+        //------------------Player 2------------------//
         case 'r':
         case 'R':
             init_game();
             game_finished = false; //Using keyStatus trick
             break;
         
-        case 27 :
+        case ESC_KEY :
              exit(0);
     }
     glutPostRedisplay();
