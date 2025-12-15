@@ -112,16 +112,19 @@ bool ArenaPlayer::IsMoving()
 {
     return(
         this->GetPosition().GetX()-this->last_animation_attempt_position.GetX() +
-        this->GetPosition().GetY()-this->last_animation_attempt_position.GetX() +
-        this->GetPosition().GetZ()-this->last_animation_attempt_position.GetY() != 0
+        this->GetPosition().GetY()-this->last_animation_attempt_position.GetY() +
+        this->GetPosition().GetZ()-this->last_animation_attempt_position.GetZ() != 0
     );
 }
 
 
-void ArenaPlayer::AnimatePlayer()
+void ArenaPlayer::Animate()
 {
     if(this->IsMoving())
     {
+        // this->GetPosition().PrintAttributes();
+        // this->last_animation_attempt_position.PrintAttributes();
+
         this->SetMovingStatus(true);
         this->last_animation_attempt_position = this->GetPosition();
         if (this->GetLastLeg() == RIGHT_LEG_ID)
@@ -147,15 +150,21 @@ void ArenaPlayer::Move(
     //     this->GetLastPosition().GetX(),this->GetLastPosition().GetY(),this->GetLastPosition().GetZ()
     // );
     this->SetLastPosition(this->GetPosition());
-    // printf("Updated Last Pos x:%.2f|| z:%.2f|| z:%.2f\n",
-    //     this->GetLastPosition().GetX(),this->GetLastPosition().GetY(),this->GetLastPosition().GetZ()
-    // );
+
+    // printf("\n-------------------------\n");
+    // printf("Pre\n");
+    // this->GetPosition().PrintAttributes();
+    // this->GetVelocity().PrintAttributes();
     this->GetPosition().SetX(
         this->GetPosition().GetX() + this->GetVelocity().GetVx() * timeDiference
     );
     this->GetPosition().SetY(
         this->GetPosition().GetY() + this->GetVelocity().GetVy() * timeDiference
     );
+    // printf("-------------------------\n");
+    // printf("After\n");
+    // this->GetPosition().PrintAttributes();
+    // this->GetVelocity().PrintAttributes();
     // printf("Initial Current Pos x:%.2f|| z:%.2f|| z:%.2f\n",
     //     this->GetPosition().GetX(),this->GetPosition().GetY(),this->GetPosition().GetZ()
     // );
@@ -186,6 +195,10 @@ void ArenaPlayer::Rotate(GLdouble timeDiference)
     // Velocity Vector
     this->GetVelocity().SetVx(-PLAYER_SPEED*this->direction.GetX());
     this->GetVelocity().SetVy(-PLAYER_SPEED*this->direction.GetY());
+    // printf("-------------------------\n");
+    // this->GetOrientation().PrintAttributes();
+    // this->GetVelocity().PrintAttributes();
+    // printf("-------------------------\n");
 }
 
 
@@ -220,7 +233,7 @@ void ArenaPlayer::Shoot()
         );
         glTranslatef(
             0,
-            this->GetRadius()*ARM_HEIGHT_MULTIPLER+BULLET_RADIUS,
+            this->GetRadius()*ARM_HEIGHT_MULTIPLER+ this->GetRadius()*BULLET_RADIUS_SCALER,
             0
         );
         
@@ -248,7 +261,7 @@ void ArenaPlayer::Shoot()
             this->GetColorName(),
             BULLET_VEL*bullet_x_angle,
             -BULLET_VEL*bullet_y_angle,0,
-            BULLET_RADIUS,this->GetId()
+            this->GetRadius()*BULLET_RADIUS_SCALER,this->GetId()
         );
     glPopMatrix();
 }

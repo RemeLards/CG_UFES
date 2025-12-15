@@ -45,8 +45,15 @@ std::optional<std::vector<ArenaPlayer>> players_getter(
         }
     }
 
+
     if (players_vec.size() > 0)
     {
+        if (players_vec[0].GetColorName() != "green")
+        {
+            std::swap(players_vec[0], players_vec[1]);
+            std::swap(players_vec[0].GetID(), players_vec[1].GetID());
+        }
+    
         return players_vec;
     }
 

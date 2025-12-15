@@ -19,7 +19,7 @@
 #define PLAYER_HEALTH 3
 
 #define BULLET_VEL (PLAYER_SPEED*2.0) // (3.54*PLAYER_SPEED) = PLAYER_SPEED pra bala WTF ????
-#define BULLET_RADIUS 8
+#define BULLET_RADIUS_SCALER 0.4
 #define BODY_X_RADIUS_MULTIPLER 2
 
 #define ARM_DISTANCE_MULTIPLER 0.7
@@ -43,7 +43,7 @@ class ArenaPlayer : public CircularEntityDefinition
         std::vector<Bullet> bullet_vec;
         double gun_yaw = 0.0;
         short health = PLAYER_HEALTH;
-        const int _id;
+        int _id;
         short _last_leg_id = LEFT_LEG_ID;
         bool is_leg_rotated = false;
         
@@ -69,7 +69,7 @@ class ArenaPlayer : public CircularEntityDefinition
         void DrawArm();
         void DrawLegs();
         void DrawPlayer();
-        void AnimatePlayer();
+        void Animate();
 
         // Player interaction -> Moving,Rotating and Shooting
         void Rotate(GLdouble timeDiference);
@@ -109,6 +109,7 @@ class ArenaPlayer : public CircularEntityDefinition
         
         void SetGunYaw(double g_yaw) {this->gun_yaw=g_yaw;};
 
+        int& GetID() {return this->_id;};
 };
 
 #endif
