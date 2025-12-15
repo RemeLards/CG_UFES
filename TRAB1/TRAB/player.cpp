@@ -218,8 +218,8 @@ void ArenaPlayer::Shoot()
         this->bullet_vec.emplace_back(
             bullet_x,-bullet_y,bullet_z,
             this->GetColorName(),
-            BULLET_VEL*bullet_x_angle,
-            -BULLET_VEL*bullet_y_angle,0,
+            -BULLET_VEL*bullet_x_angle,
+            BULLET_VEL*bullet_y_angle,0,
             BULLET_RADIUS,this->GetId()
         );
     glPopMatrix();
