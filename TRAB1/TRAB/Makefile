@@ -3,7 +3,7 @@ CFLAGS = -g -Wall
 LINKING = -lglut -lGL -lGLU
 
 SOURCES = $(wildcard *.cpp *.h)
-TARGET = main
+TARGET = trabalhocg
 
 all: $(TARGET)
 

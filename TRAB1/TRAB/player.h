@@ -13,8 +13,8 @@
 #include <math.h>
 
 
-#define PLAYER_SPEED -32.0 // Para mover para cima e para baixo se mantenha consistente
-#define PLAYER_ROTATIONAL_SPEED 32.0 // Para mover para cima e para baixo se mantenha consistente
+#define PLAYER_SPEED 64.0 // Para mover para cima e para baixo se mantenha consistente
+#define PLAYER_ROTATIONAL_SPEED 100.0 // Para mover para cima e para baixo se mantenha consistente
 #define GUN_ROTATIONAL_SPEED 100.0 // Para mover para cima e para baixo se mantenha consistente
 #define PLAYER_HEALTH 3
 

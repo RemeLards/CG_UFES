@@ -2,10 +2,6 @@
 #include <GL/glu.h>
 #include <GL/glut.h>
 
-
-#include "robo.h"
-#include "alvo.h"
-
 #include "utils.h"
 #include "arena_parser.h"
 #include "arena.h"
@@ -62,7 +58,20 @@ std::vector<PositionDefinition> last_players_recorded_pos;
 
 std::vector<GLdouble> last_time_player_shoot = {0.0,0.0};
 
+//podia fazem um enum mas preguiça ...
+#define PLAYER1_ID 1
+#define PLAYER2_ID 2
+
+#define NO_PLAYER -2
+#define DRAW -1
+#define PLAYER1_WON PLAYER1_ID
+#define PLAYER2_WON PLAYER2_ID
+
+#define PLACAR_PLAYER1 PLAYER1_ID
+#define PLACAR_PLAYER2 PLAYER2_ID
+
 bool game_finished = false;
+short int game_winner = NO_PLAYER;
 
 // Debugging Vel
 PositionDefinition past_p1_pos;
@@ -75,7 +84,6 @@ int animate = 0;
 static char str[1000];
 void * font = GLUT_BITMAP_9_BY_15;
 
-
 //Mouse
 float gCurrentMouseX = 0;
 float gCurrentMouseY = 0;
@@ -83,6 +91,7 @@ float gPastMouseX = 0;
 float gPastMouseY = 0;
 int MouseButton = -1;
 int MouseState = -1;
+
 //Game Mouse Pos
 float gCurrentGameMouseX = 0;
 float gCurrentGameMouseY = 0;
@@ -280,17 +289,15 @@ void AnimatePlayersLeg(GLdouble currentTime)
 
 void ImprimePlacar(GLfloat x, GLfloat y, int player)
 {
-    glColor3f(1.0, 1.0, 1.0);
     //Cria a string a ser impressa
-    char *tmpStr;
-    if (player >= 0) sprintf(str, "P%d Health: %d",player+1, g_players[player].GetHealth());
-    else 
-    {
-        if (g_players[0].GetHealth() > 0) sprintf(str, "P%d Wins",1);
-        else if (g_players[1].GetHealth() > 0) sprintf(str, "P%d Wins",2);
-        else sprintf(str, "Draw");
-    }
-    //Define a posicao onde vai comecar a imprimir
+    static char *tmpStr;
+    if (game_winner == NO_PLAYER) sprintf(str, "P%d Health: %d",player-1, g_players[player-1].GetHealth());
+    else if (game_winner == PLAYER1_WON) sprintf(str, "P%d Wins",PLAYER1_ID);
+    else if (game_winner == PLAYER2_WON) sprintf(str, "P%d Wins",PLAYER2_ID);
+    else if (game_winner == DRAW) sprintf(str, "Draw");
+    
+    //Define a cor e posicao onde vai comecar a imprimir
+    glColor3f(1.0, 1.0, 1.0);
     glRasterPos2f(x, y);
     //Imprime um caractere por vez
     tmpStr = str;
@@ -306,44 +313,43 @@ void renderScene(void)
     // Clear the screen.
     glClear(GL_COLOR_BUFFER_BIT);
 
-        if (!game_finished)
-        {
-            glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT);
 
-            g_arena.DrawArena();
+        g_arena.DrawArena();
 
-            for ( CircularObstacle& obstacle : g_obstacles)
-            {
-                obstacle.DrawObstacle();
-            }
-            // int i = 0;
-            for ( ArenaPlayer& player : g_players)
-            {
-                player.DrawPlayer();
-                // printf("Bullets : %ld || player : %d\n",player.GetBulletVec().size(),++i);
-                for ( Bullet& bullet : player.GetBulletVec())
-                {
-                    bullet.DrawBullet();
-                }
-            }
-            ImprimePlacar(-VWidth*0.5,VHeight*0.45, 0);
-            ImprimePlacar(-VWidth*0.5,VHeight*0.40, 1);
-        }
-        else
+        for ( CircularObstacle& obstacle : g_obstacles)
         {
-            ImprimePlacar(-VWidth*0.05,VHeight*0, -1); 
+            obstacle.DrawObstacle();
         }
+        for ( ArenaPlayer& player : g_players)
+        {
+            if (game_winner == PLAYER1_WON && player.GetId() == PLAYER2_ID) continue;
+            if (game_winner == PLAYER2_WON && player.GetId() == PLAYER1_ID) continue;
+            if (game_winner == DRAW) break; // Does not draw any player
+            
+            player.DrawPlayer();
+            for ( Bullet& bullet : player.GetBulletVec())
+            {
+                bullet.DrawBullet();
+            }
+        }
+        if (!(game_finished))
+        {
+            ImprimePlacar(-VWidth*0.5,VHeight*0.45, PLACAR_PLAYER1);
+            ImprimePlacar(-VWidth*0.5,VHeight*0.40, PLACAR_PLAYER2);
+        }
+        else ImprimePlacar(-VWidth*0.05,VHeight*0, game_winner); 
 
     glutSwapBuffers(); // Desenha the new frame of the game.
 }
 
 
-void init_game()
+void init_game(void)
 {
     // Record Last Positions before start
+    // Setting Up Character to look at each othe
 
-    // Setting Up Character to look at each other
-
+    game_winner = NO_PLAYER;
     if (first_start)
     {
         ArenaPlayer& p1 = g_players[0];
@@ -357,10 +363,10 @@ void init_game()
         // printf("Thetha : %.2f\n",dtheta);
         // Removo o Offset de 90 graus e alinho os personagens
 
-        // p1.SetYaw(-90-dtheta+180);
-        // p2.SetYaw(-90-dtheta);
-        p1.SetYaw(0); // Testado BUG que deu
-        p2.SetYaw(0);
+        p1.SetYaw(-90-dtheta+180);
+        p2.SetYaw(-90-dtheta);
+        // p1.SetYaw(0); // Testado BUG que deu
+        // p2.SetYaw(0);
         p1.Rotate(0); // Updates Direction Vector
         p2.Rotate(0); // Updates Direction Vector
 
@@ -396,7 +402,7 @@ void init_game()
         }
 
         last_players_recorded_pos.push_back(player.GetPosition());
-        player.GetVelocity().SetVy(PLAYER_SPEED);
+        player.GetVelocity().SetVy(-PLAYER_SPEED);
     }
     if (first_start) first_start=false; //first setup
 }
@@ -476,7 +482,7 @@ void keyup(unsigned char key, int x, int y)
 }
 
 
-void ResetKeyStatus()
+void ResetKeyStatus(void)
 {
     int i;
     //Initialize keyStatus
@@ -509,17 +515,22 @@ void idle(void)
     //Atualiza o tempo do ultimo frame ocorrido
     previousTime = currentTime;
 
-    // past_p1_pos = g_players[0].GetPosition();
-    // if (g_players[0].GetBulletVec().size() > 0)
-    // {
+    //past_p1_pos = g_players[0].GetPosition();
+    //if (g_players[0].GetBulletVec().size() > 0)
+    //{
     //     past_b1_pos = g_players[0].GetBulletVec()[0].GetPosition();
-    // }
+    //}
 
     if (!game_finished)
     {
-
-
-        if(g_players[0].GetHealth() == 0 || g_players[1].GetHealth() == 0) game_finished=true;
+    
+        if(g_players[0].GetHealth() == 0 || g_players[1].GetHealth() == 0)
+        {
+            if (g_players[0].GetHealth() == 0 && g_players[1].GetHealth() == 0) game_winner=DRAW;
+            else if (g_players[0].GetHealth() == 0) game_winner=PLAYER2_WON;
+            else if (g_players[1].GetHealth() == 0) game_winner=PLAYER1_WON;
+            game_finished=true;
+        }
         AnimatePlayersLeg(currentTime);
         Player1_Keys(timeDiference*TIME_S,currentTime);
         Player2_Keys(timeDiference*TIME_S,currentTime);
@@ -533,14 +544,13 @@ void idle(void)
         //     printf("Bullet Position Diff : %.5f\n",PositionDiffSquared(past_b1_pos,g_players[0].GetBulletVec()[0].GetPosition()));
         //     printf("Bullet Velocity Squared : %.5f\n",BULLET_VEL*BULLET_VEL*timeDiference*TIME_S);
         // }
-
         
         glutPostRedisplay();
     }
 }
 
 
-void gl_init()
+void gl_init(void)
 {
     ResetKeyStatus();
     // The color the windows will redraw. Its done to erase the previous frame.

@@ -24,7 +24,7 @@ std::optional<std::vector<ArenaPlayer>> players_getter(
 )
 {
     std::vector<ArenaPlayer> players_vec;
-    int id = 0;
+    int id = 1;
     for (CircleDefinition& circle : svg_circles)
     {
         if (circle.GetColorName() != "blue" && circle.GetColorName() != "black")
