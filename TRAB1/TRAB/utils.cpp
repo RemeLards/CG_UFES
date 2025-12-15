@@ -4,17 +4,26 @@ using namespace tinyxml2;
 
 void PositionDefinition::PrintAttributes()
 {
-    printf(" Colors:");
+    printf(" Position:");
     printf(" x: %.2f|", this->GetX());
     printf(" y: %.2f|", this->GetY());
     printf(" z:  %.2f", this->GetZ());
     printf("\n\n");
 }
 
+void OrientationDefinition::PrintAttributes()
+{
+    printf(" Orientation:");
+    printf(" roll: %.2f|",  this->GetRoll());
+    printf(" pitch: %.2f|", this->GetPitch());
+    printf(" yaw:  %.2f",   this->GetYaw());
+    printf("\n\n");
+}
+
 
 void VelocityDefinition::PrintAttributes()
 {
-    printf(" Colors:");
+    printf(" Velocity:");
     printf(" vx: %.2f|", this->GetVx());
     printf(" vy: %.2f|", this->GetVy());
     printf(" vz:  %.2f", this->GetVz());

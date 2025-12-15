@@ -32,6 +32,29 @@ class PositionDefinition
         void PrintAttributes();
 };
 
+class OrientationDefinition
+{
+    private:
+        double _roll;
+        double _pitch;
+        double _yaw;
+
+    public:
+        OrientationDefinition() :  _roll(0.0),_pitch(0.0),_yaw(0.0) {};
+        OrientationDefinition(double roll ,double pitch, double yaw) 
+            : _roll(roll),_pitch(pitch),_yaw(yaw) {};
+        
+        const double& GetRoll()  const { return _roll; };
+        const double& GetPitch() const { return _pitch; };
+        const double& GetYaw()   const { return _yaw; };
+
+        void SetRoll(double roll)   { _roll = roll; };
+        void SetPitch(double pitch) { _pitch = pitch; };
+        void SetYaw(double yaw)     { _yaw = yaw; };
+
+        void PrintAttributes();
+};
+
 class VelocityDefinition
 {
     private:
@@ -95,11 +118,17 @@ class ObjectDefinition
 {
     private:
         PositionDefinition _position;
+        OrientationDefinition _orientation;
         std::string color;
         RGBColor rgb;
     public:
-        ObjectDefinition(double x, double y, double z,const std::string& color)
-            : _position{x, y, z}, color(color), rgb{}
+        ObjectDefinition() 
+          :_position{0.0,0.0,0.0},_orientation{0.0,0.0,0.0},color("NULL"),rgb{}
+        {};
+        ObjectDefinition(double x, double y, double z,
+                        double roll, double pitch, double yaw,
+                        const std::string& color
+        ) : _position{x, y, z}, _orientation{roll,pitch,yaw}, color(color), rgb{}
             {
                 this->SetRBGByColorName();
             }
@@ -110,6 +139,8 @@ class ObjectDefinition
         RGBColor& GetRGB() {return rgb;};
 
         PositionDefinition& GetPosition() { return _position; };
+        OrientationDefinition& GetOrientation() { return _orientation; };
+
 
         void PrintAttributes();
 };
@@ -121,7 +152,7 @@ class CircleDefinition : public ObjectDefinition
         double _radius;  
     public:
         CircleDefinition(double cx, double cy, double radius, const std::string& color)
-            : ObjectDefinition(cx,cy,0,color), _radius(radius) {};
+            : ObjectDefinition(cx,cy,0.0,0.0,0.0,0.0,color), _radius(radius) {};
         
         const double& GetRadius() const { return _radius; };
         void SetRadius(double r) { _radius = r; };
@@ -138,11 +169,15 @@ class EntityDefinition : public ObjectDefinition
         bool _is_moving = false;
 
     public:
+        EntityDefinition() 
+          : ObjectDefinition(), velocity{0.0,0.0,0.0},_last_pos{0.0,0.0,0.0}
+        {};
         EntityDefinition(
             double x, double y, double z,
+            double roll ,double pitch, double yaw,
             const std::string& color,
             double vx, double vy, double vz
-        ) : ObjectDefinition(x, y, z, color), velocity{vx, vy, vz}, _last_pos{x,y,z}
+        ) : ObjectDefinition(x, y, z, roll, pitch, yaw, color), velocity{vx, vy, vz}, _last_pos{x,y,z}
         {};
 
         VelocityDefinition& GetVelocity() { return velocity; };
@@ -162,12 +197,16 @@ class CircularEntityDefinition : public EntityDefinition
         double _radius;
 
     public:
+        CircularEntityDefinition() 
+          : EntityDefinition(),_radius(0.0) 
+        {};
         CircularEntityDefinition(
             double x, double y, double z,
+            double roll ,double pitch, double yaw,
             const std::string& color,
             double vx, double vy, double vz,
             double radius
-        ) : EntityDefinition(x, y, z, color,vx,vy,vz), _radius(radius)
+        ) : EntityDefinition(x, y, z, roll, pitch, yaw, color,vx,vy,vz), _radius(radius)
         {};
 
         const double& GetRadius() const { return _radius; };

@@ -1,4 +1,4 @@
-CXX = g++
+CXX = g++ -std=c++17
 CFLAGS = -g -Wall
 LINKING = -lglut -lGL -lGLU
 

@@ -97,7 +97,7 @@ void ArenaPlayer::DrawPlayer()
             0
         );
         glRotatef(
-            this->yaw,
+            this->GetOrientation().GetYaw(),
             0,0,1
         );
         this->DrawLegs();
@@ -108,7 +108,36 @@ void ArenaPlayer::DrawPlayer()
 }
 
 
-//----------Movement------------//
+bool ArenaPlayer::IsMoving()
+{
+    return(
+        this->GetPosition().GetX()-this->last_animation_attempt_position.GetX() +
+        this->GetPosition().GetY()-this->last_animation_attempt_position.GetY() +
+        this->GetPosition().GetZ()-this->last_animation_attempt_position.GetZ() != 0
+    );
+}
+
+
+void ArenaPlayer::Animate()
+{
+    if(this->IsMoving())
+    {
+        // this->GetPosition().PrintAttributes();
+        // this->last_animation_attempt_position.PrintAttributes();
+
+        this->SetMovingStatus(true);
+        this->last_animation_attempt_position = this->GetPosition();
+        if (this->GetLastLeg() == RIGHT_LEG_ID)
+        {
+            this->SetCurrentLeg(LEFT_LEG_ID);
+        }
+        else this->SetCurrentLeg(RIGHT_LEG_ID);
+    }
+    else this->SetMovingStatus(false);
+}
+
+
+//----------Interaction------------//
 
 void ArenaPlayer::Move(
     CircularArena& arena,
@@ -117,22 +146,15 @@ void ArenaPlayer::Move(
     GLdouble timeDiference)
 {
     // Fiz pegando a cópia não referência, consertar depois
-    // printf("Initial Last Pos x:%.2f|| z:%.2f|| z:%.2f\n",
-    //     this->GetLastPosition().GetX(),this->GetLastPosition().GetY(),this->GetLastPosition().GetZ()
-    // );
+
     this->SetLastPosition(this->GetPosition());
-    // printf("Updated Last Pos x:%.2f|| z:%.2f|| z:%.2f\n",
-    //     this->GetLastPosition().GetX(),this->GetLastPosition().GetY(),this->GetLastPosition().GetZ()
-    // );
+
     this->GetPosition().SetX(
         this->GetPosition().GetX() + this->GetVelocity().GetVx() * timeDiference
     );
     this->GetPosition().SetY(
         this->GetPosition().GetY() + this->GetVelocity().GetVy() * timeDiference
     );
-    // printf("Initial Current Pos x:%.2f|| z:%.2f|| z:%.2f\n",
-    //     this->GetPosition().GetX(),this->GetPosition().GetY(),this->GetPosition().GetZ()
-    // );
     
     if ( this->ArenaCollision(arena) || 
          this->ObstacleCollision(arena,obstacles_vec) || 
@@ -141,25 +163,24 @@ void ArenaPlayer::Move(
     {
         this->GetPosition() = this->GetLastPosition();
     }
-    // printf("Updated Current Pos x:%.2f|| z:%.2f|| z:%.2f\n",
-    //     this->GetPosition().GetX(),this->GetPosition().GetY(),this->GetPosition().GetZ()
-    // );
 }
+
 
 void ArenaPlayer::Rotate(GLdouble timeDiference)
 {
-    this->yaw += PLAYER_ROTATIONAL_SPEED*timeDiference;
-    if (this->yaw >= 360.0) this->yaw -= 360.0;
-    if (this->yaw <= -360.0) this->yaw += 360.0;
+    this->GetOrientation().SetYaw(this->GetOrientation().GetYaw()+PLAYER_ROTATIONAL_SPEED*timeDiference);
+    if (this->GetOrientation().GetYaw() >= 360.0)  this->GetOrientation().SetYaw(this->GetOrientation().GetYaw() - 360.0);
+    if (this->GetOrientation().GetYaw() <= -360.0) this->GetOrientation().SetYaw(this->GetOrientation().GetYaw() + 360.0);
 
     // Direction Vector
-    this->direction.SetX(sin(this->yaw*RADIANS));
-    this->direction.SetY(cos(this->yaw*RADIANS));
+    this->direction.SetX(sin(this->GetOrientation().GetYaw()*RADIANS));
+    this->direction.SetY(cos(this->GetOrientation().GetYaw()*RADIANS));
 
     // Velocity Vector
     this->GetVelocity().SetVx(-PLAYER_SPEED*this->direction.GetX());
     this->GetVelocity().SetVy(-PLAYER_SPEED*this->direction.GetY());
 }
+
 
 void ArenaPlayer::RotateGun(GLdouble timeDiference)
 {
@@ -168,7 +189,6 @@ void ArenaPlayer::RotateGun(GLdouble timeDiference)
     if (this->gun_yaw <= -45.0) this->gun_yaw = -45.0;
 }
 
-//----------Shotting-----------//
 
 void ArenaPlayer::Shoot()
 {
@@ -179,7 +199,7 @@ void ArenaPlayer::Shoot()
             0
         );
         glRotatef(
-            this->yaw,
+            this->GetOrientation().GetYaw(),
             0,0,1
         );
         glTranslatef(
@@ -193,7 +213,7 @@ void ArenaPlayer::Shoot()
         );
         glTranslatef(
             0,
-            this->GetRadius()*ARM_HEIGHT_MULTIPLER+BULLET_RADIUS,
+            this->GetRadius()*ARM_HEIGHT_MULTIPLER+ this->GetRadius()*BULLET_RADIUS_SCALER,
             0
         );
         
@@ -217,10 +237,11 @@ void ArenaPlayer::Shoot()
 
         this->bullet_vec.emplace_back(
             bullet_x,-bullet_y,bullet_z,
+            0.0,0.0,0.0,
             this->GetColorName(),
             BULLET_VEL*bullet_x_angle,
             -BULLET_VEL*bullet_y_angle,0,
-            BULLET_RADIUS,this->GetId()
+            this->GetRadius()*BULLET_RADIUS_SCALER,this->GetId()
         );
     glPopMatrix();
 }

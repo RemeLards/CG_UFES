@@ -19,7 +19,7 @@
 #define PLAYER_HEALTH 3
 
 #define BULLET_VEL (PLAYER_SPEED*2.0) // (3.54*PLAYER_SPEED) = PLAYER_SPEED pra bala WTF ????
-#define BULLET_RADIUS 8
+#define BULLET_RADIUS_SCALER 0.4
 #define BODY_X_RADIUS_MULTIPLER 2
 
 #define ARM_DISTANCE_MULTIPLER 0.7
@@ -38,32 +38,38 @@ class Bullet; // forward declaration
 class ArenaPlayer : public CircularEntityDefinition
 {
     private:
-        PositionDefinition direction = {0,1,0};
+        PositionDefinition direction = {0,1,0}; // a Classe podia estar com outro nome, porém apenas aproveitei a classe
+        PositionDefinition last_animation_attempt_position;
         std::vector<Bullet> bullet_vec;
-        double yaw = 0.0;
         double gun_yaw = 0.0;
         short health = PLAYER_HEALTH;
-        const int _id;
+        int _id;
         short _last_leg_id = LEFT_LEG_ID;
         bool is_leg_rotated = false;
         
     public:
+        ArenaPlayer()
+          : CircularEntityDefinition(),gun_yaw(0),_id(0)
+        {};
         ArenaPlayer(
             double x, double y, double z,
+            double roll ,double pitch, double yaw,
             const std::string& color,
             double vx, double vy, double vz,
             double head_radius, int id
 
-        ):  CircularEntityDefinition(x,y,z,color,vx,vy,vz,head_radius),
+        ) :  CircularEntityDefinition(x,y,z,roll,pitch,yaw,color,vx,vy,vz,head_radius),
+            last_animation_attempt_position({x,y,z}),
             gun_yaw(0),
-            _id(id) {};
+            _id(id)
+        {};
 
         // Drawing
         void DrawBody();
         void DrawArm();
         void DrawLegs();
         void DrawPlayer();
-        void AnimatePlayer();
+        void Animate();
 
         // Player interaction -> Moving,Rotating and Shooting
         void Rotate(GLdouble timeDiference);
@@ -76,6 +82,7 @@ class ArenaPlayer : public CircularEntityDefinition
         );
         void Shoot();
         void GotHit() { this->health--;};
+        bool IsMoving();
         // void DeleteBullet(std::size_t index);
         // int GetBulletIndex(Bullet* bullet);
 
@@ -99,11 +106,12 @@ class ArenaPlayer : public CircularEntityDefinition
 
         void SetDirection(PositionDefinition dir) {this->direction=dir;};
         PositionDefinition GetDirection() const {return this->direction;};
-        void SetYaw(double yaw) {this->yaw=yaw;};
-        double GetYaw() const {return this->yaw;};
         
         void SetGunYaw(double g_yaw) {this->gun_yaw=g_yaw;};
 
+        int& GetID() {return this->_id;};
+        void SetLastAnimationAttemptPosition(PositionDefinition pos)
+            {this->last_animation_attempt_position = pos;};
 };
 
 #endif
